@@ -1,0 +1,61 @@
+MANTENIMIENTOS DESDE JUNIO 2022 HASTA LA FECHA
+[?21/?03/?2023 12:48]  CARLOS ALBERTO LINARES HIDALGO:  
+merge
+mrg4356
+
+CKLR  -> usuario TSO
+ 
+
+RHDLAEMP, RHDLATRA y RHDLAREM  
+
+RHDLAEMP	JCL  JOB 1270
+RHDLATRA	JCL  JOB 1278
+RHDLAREM	JCL  JOB 1280
+
+
+
+//JOBLIB   DD  DSN=CEE.SCEERUN.Z16,DISP=SHR         
+//         DD  DSN=CERT.PVISA.LIBMOD.BATCH,DISP=SHR 
+//         DD  DSN=CERT.PTOLD.LIBMOD.BATCH,DISP=SHR 
+//         DD  DSN=CERT.PROD.LIBMOD.BATCH,DISP=SHR  
+//         DD  DSN=PDATACOM.LOAD.INFOCAI,DISP=SHR   
+//         DD  DSN=PDATACOM.LOAD.LIBRARY,DISP=SHR   
+//         DD  DSN=CICSTS23.CICS.SDFHEXCI,DISP=SHR  
+
+**********************************************************
+
+HOST
+
+cemt i file(*) -> par aver VSAM
+DBOC INQ=???  -> para ver tablas
+
+NOTA: CESF LOGOFF -> Para cerrar cesion
+NOTA: CEMT I FILE 
+- DBDCCIC2 -> CCICSTP2
+- DBDCCIC1 -> CCICSTP1
+- PCICSFOR -> CICSTS
+- DBDCCICS -> CCICSTP
+- PCICSAP -> CICSAP
+- PCICSFOR -> CCICSFOR (EN EL FOR SE INSCRIBEN LOS VSAM ACTUALIZADOS- SI SE REINICIA EL FOR tenemos que actualizar los VSAM)
+- CICSATM -> CCICSATM
+- PCICTOR1 > CCISTOR1
+
+PARA FORMATEAR UNA TABLA
+
+ //********************************************************************
+ //*                                                                  *
+ //*                 STAD3030       FORMAT ARCHIVO REF21              *
+ //*                               LOG DE MOVIM-AHORROS MN 24X7       *
+ //********************************************************************
+ //BCKUPT20 EXEC PGM=STAD3030,PARM='DBURT=DB251LM1',COND=(0,NE)        
+ //SYSPRINT DD SYSOUT=*                                                
+ //SYSDBOUT DD SYSOUT=*                                                
+ //SYSABEND DD SYSOUT=*                                                
+ //SYSDBDEV DD DSN=&&DTVF1,DISP=(NEW,PASS),UNIT=3390,                  
+ //            SPACE=(CYL,(5,5),RLSE),                                 
+ //            DCB=(RECFM=FB,BLKSIZE=700,LRECL=070)                    
+ //SYS006   DD DDNAME=SYSIN                                            
+ //SYS007   DD SYSOUT=*                                                
+ //SYSIN    DD *                                                       
+ EXTRACT251LM1LM1KMLM1010007000700                                     
+ /*                                                                    

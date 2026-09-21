@@ -1,0 +1,28 @@
+cancelar un job 
+
+*****  a p43.canc+
+
+****   luego entramos por JCL POR NRO a editar con e
+
+
+
+**** en el comand cj99xx  editamos el job que queremos eliminar 
+y borramos user= PCYCV.PASSWORD.CVYK
+y luego ejecutamos con sub y ya esta
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+**** con + volvemos antes 

@@ -1,0 +1,15 @@
+A L +   ( PARA VER TODA TU LIBRERIA DE AWS ) 
+A L     ( PARA MOSTRAR EL LIBRARY FACILITY )
+
+I       ( PARA MODIFICAR LA DESCRIPCION DE TU LIBRERIA DE AWS)
+D       ( PARA ELIMINAR TU LIBRERIA DE AWS )
+
+
+
+
+
+// PARTICIONADO //
+a d ctpct.s.reporte.rc+
+escribir "al" en el lado izquierdo
+cambiar el RCD por el nombre que deseamos
+enter y listo. 

@@ -1,0 +1,42 @@
+MANUAL:
+
+*----------------------------*
+      ORDEN DE REINICIO
+*----------------------------*
+1. CCICSFOR
+2. CCICSTP - antes de abrir TP se debe abrir el Pdatacom / EL TP SE LEVANTA CON M=COLD
+3. CCICSAP
+4. CCICSATM
+5. CCICSTP1
+6. CCICSTP2
+7. PCICSHUB
+8. CCICTOR1
+9. CCICTOR2
+10. CICSJSON
+11. PCICHUB2
+12. CCICSIX
+13. CCICTOR3
+14. CICSJSN2
+15. CCICTR04
+
+CCITCP
+DCOMSRV
+ENF - Se baja con /P y luego verificar el log
+
+BAJAR PDATACOM
+/C PDATACOM 
+SUBIR PDATACOM
+/F PDATACOM,EOJFREE
+/S PDATACOM  
+
+BAJAR DCOMSVR
+/C DCOMSVR
+/P ENF  ***(DESACTIVA CCITCP)
+ACTIVAR DCOMSVR
+/S DCOMSVR 
+/S ENF,,,REINIT  ***(ACTIVA CCITCP)
+
+
+NOTA:
+En vez de colocar /98,go se pone /98,y (en caso no se ejecute bien) 
+son 2 comandos que se ejecutan para el PDATACOM y DCOMSVR

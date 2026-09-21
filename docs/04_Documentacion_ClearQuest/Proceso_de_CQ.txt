@@ -1,0 +1,10 @@
+Un mantenimiento inicia por la fase de “Registrado” por parte de Desarrollo, luego esta se asigna a una analista de esa área “Asignado” y finalmente pasa a estado de “Aprobado” para que sea posteriormente atendido por certificación.
+Una vez que el área de Certi atiende el mantenimiento, pasa al estado “En_Certificación”, se asigna a un analista para iniciar sus fases y asignar sus actividades.
+La primera fase es de Planificación, donde se define la complejidad, prioridad, las fechas y se asignan las actividades: Revisión, Diseño, Despliegue y Ejecución.
+Se entra a la etapa de revisión y se carga el documento checklist en base a los documentos subidos por el área de desarrollo. Posterior a ello, es la fase de Preparación, donde se desarrolla la etapa de Diseño (se realizan los documentos CRG, DCP e IAR) y Despliegue. Luego se pasa a la fase de ejecución donde se desarrolla la etapa de Ejecución.
+Finalmente cuando el mantenimiento cumple con todo, se pasa al estado de “Certificado”. Luego el área de producción determina en base a sus estándares si el mantenimiento es “Devuelto” en el peor de los casos o si es “Procesado” si todo está correcto.
+Notas: 
+-	Puede darse el caso que en cualquiera de las fases el mantenimiento pase a estado de “Rechazado” por diferentes inconsistencias con la documentación o tiempos.
+-	Cuando un mantenimiento está en estado de “Observado_Certificación”, significa que el área de desarrollo necesita corregir documentos o subir componentes faltantes.
+-	En un mantenimiento, cada servicio puede tener defectos, estos se registran en el apartado “Defectos”.
+-	Los analistas suelen apoyar con los mantenimientos de “Transitorio_Regularizado”, estos son mantenimientos que pasaron de desarrollo hacia producción sin un filtro de calidad. Suele regularizarse documentación.

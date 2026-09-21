@@ -1,0 +1,34 @@
+
+*------------------------*
+     EXPORTAR SPOOL 
+*------------------------*
+Entrar TSO -> sd.st 
+buscar JCL -> pre (jcl)  ejm: pre TOLDVINI
+buscar el job -> colocar s a lado del job: s TOLDVINI
+en comandos colocar
+1. PT ODSN 'CTPCT.S.REPORTE.LUIS' *
+2. PT;PT CLOSE 
+
+Luego ingresar a roscoc:
+buscar a ftpput con a en marisol, o con a ftp*
+editamos:
+
+1. nombre del spool .txt
+
+
+---------------------
+OTRA OPCION:
+POR CMD:
+ftp 10.1.1.12
+desarrollo: 10.1.0.8
+
+get 'dtpct.s.reporte1' D:\reportes\reporte1.txt
+
+
+
+
+
+guardar en particionado: CTPCT.S.REPORTE5
+ir a a ftpput
+PUT 'CTPCT.S.REPORTE5'    SPOOL_CRHPM10.TXT    
+

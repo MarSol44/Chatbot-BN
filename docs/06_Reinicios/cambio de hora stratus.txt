@@ -1,0 +1,27 @@
+dbaccess
+Query-language - enter
+espcore6@bdn_certi - enter
+opcion new
+
+select netstlmt,netid, netname  from netinst
+
+tecla ESC  opcion NEW
+
+update netinst set netstlmt=2359 where netstlmt=1500
+
+fts6 stop
+
+swinit -d 
+
+atmmem -d 
+
+
+
+
+fts6 start
+
+
+
+
+
+

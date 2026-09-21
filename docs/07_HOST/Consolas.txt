@@ -1,0 +1,17 @@
+Consola de págalo
+https://10.7.106.55:9043/ibm/console/login.do?csrfid=-1317108716&action=secure
+
+Consola HUB
+https://10.7.106.96:9043/ibm/console/login.do?action=secure
+
+ecangalayas / ecangalayas2018
+
+https://10.7.106.82/ CONSOLA DE BDUC
+
+http://10.7.106.115:9080/WSGatewayService/services/GatewayInterface URL webservice gateway SARAWEBSIGN
+
+
+
+
+10.7.106.218
+9080

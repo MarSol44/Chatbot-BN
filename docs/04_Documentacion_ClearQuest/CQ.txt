@@ -1,0 +1,75 @@
+CLEAR QUEST
+*------------*
+ACTIVIDADES
+*------------*
+
+1. Entrar a Plan-> Servicios de Certificacion
+2. BOTON: Iniciar Planificaciion -> 
+poner datos en Certificacion
+poner datos en Ejecucion
+guardar
+BOTON: Terminar Planificaciion 
+
+3. Agregar 
+Revisión
+Diseño
+Despliegue
+Ejecución
+Ejecución, Ejecución UAT
+
+
+Ir a Actividades -> Nuevo 
+-> en "Actividad QA"
+	llenar 
+	- NO OLVIDAR AL RESPONSABLE
+	- Resumen con el nombre de la etapa (en ejecucion es ejecucion o ejecucion UAT)
+	- Descripcion con el mismo nombre de la etapa tambien. 
+
+-> en Documentos 
+Agregar en Documentos a Incluir (pero no los documentos en si):
+
+LUEGO "Nuevo" de nuevo, y asi hasta estar los cuatro.
+
+BOTON: guardar
+
+4. 
+BOTON: Iniciar Revisión
+BOTON: Guardar
+
+entrar a Revision: 
+BOTON: Iniciar-> documentos
+BOTON: Finalizar-> notas
+BOTON: Validar->guardar y cerrar
+
+BOTON: Finalizar Revision
+BOTON: Guardar
+
+
+5. 
+BOTON: Iniciar Preparación
+BOTON: Guardar
+
+entrar a Diseño: 
+BOTON: Iniciar-> documentos-> Guardar
+BOTON: Finalizar-> notas
+BOTON: Validar->guardar y cerrar
+
+entrar a Despliegue: 
+BOTON: Iniciar-> Guardar 
+BOTON: Finalizar-> Guardar
+BOTON: Validar>guardar y cerrar
+
+
+BOTON: Terminar Preparación
+BOTON: Guardar
+
+
+
+
+*------------*
+Certificar Mantenimiento
+*------------*
+- Actas firmadas
+- Certificar actividades
+- Certificar pases a produccion
+

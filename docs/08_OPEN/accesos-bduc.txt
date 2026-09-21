@@ -1,0 +1,7 @@
+**Accesos a BDUC*
+usuario: krvc
+contraseña: krvc.001
+http://10.7.106.84/bduc/
+http://10.7.106.86/bduc/
+http://10.7.106.88/bduc/
+http://10.7.106.90/bduc/

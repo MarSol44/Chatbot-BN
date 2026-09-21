@@ -1,0 +1,73 @@
+
+
+
+Inscribir  transacciones en CICS 
+---------------------------------
+
+Ingresar al CICS y firmar CESN, luego escribir:
+
+CEDA E G(*) TRANS(BI*) -----> para ver a que  grupo y profile pertenece por ejemplo:
+Grupo: PCTMG
+Profile: XXXXTF00
+
+luego de copiar el grupo y profile escribir el comando para inscribir la tx:
+
+CEDA DEFINE TRANS(B100) GR(PCTMG) PROGR(SITB6100) PROF(XXXXTF00) 
+
+retroceder con F3 
+luego escribir:
+CEDA E G(*) TRANS(B100)    nos mostrara la transccion, se pone I al lado derecho para instalar la tx
+
+
+
+CEDA E G(*) TRANS(CR*) -----> para ver a que  grupo y profile pertenece por ejemplo:
+Grupo: CRDRX
+Profile: XXXXAF00
+
+luego de copiar el grupo y profile escribir el comando para inscribir la tx:
+
+CEDA DEFINE TRANS(TE78) GR(PCTMG) PROGR(CCTE6578) PROF(DFHCICST) 
+
+
+
+
+
+
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+

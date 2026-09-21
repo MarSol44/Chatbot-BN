@@ -1,0 +1,41 @@
+10.7.106.36 21 (EXIT      
+ftpcalidad                
+ftpcalidad2014          
+
+10.7.106.68 21 (EXIT      
+sai_contabilidad                
+123456a.  
+
+
+
+10.7.106.36 (EXIT                                             
+ftpcalidad                                                    
+ftpcalidad2014       
+
+
+IP: 10.7.171.83 22
+Usuario: usercts
+Clave: Peru123456789.
+
+                                         
+SRV1CFTJV1 IP: 10.7.172.49  
+usuario usercts
+contraseña Ab123456. 
+
+
+10.7.172.78
+userbduc
+Esther$2025. 
+
+
+
+Win SCP		USUARIO		CONTRASEÑA		PROTOCOLO	
+10.7.106.149	cibnsixtcl01	Nova$2025.	SFTP	
+10.7.106.148	cibnsixtcl01	Nova$2025.	SFTP	
+10.7.106.147	cibnsixtcl01	Nova$2025.	SFTP	
+				
+10.7.106.36	ftpcalidad	ftpcalidad2014	FTP	
+10.7.106.68	sai_contabilidad	123456a.	FTP	
+				
+10.7.106.55	admincerti	bn$2018	SFTP	Págalo
+10.7.106.56	admincerti	bn$2018	SFTP	Págalo

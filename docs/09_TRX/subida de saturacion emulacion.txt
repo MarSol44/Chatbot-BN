@@ -1,0 +1,19 @@
+[‎4/‎05/‎2026 08:45]  MARIA GRACIELA CORDOVA SOLIS:  
+		+	Tso
+		+	Sd.log
+		+	Bajar los nodos (ejecutar los comandos)
+			-	/V NET,INACT,ID=BNSNACER,F
+			-	/V NET,INACT,ID=BNCSARAW,F
+			-	/V NET,INACT,ID=BNCSRSLM,F
+		+	Subir los nodos
+			-	/V NET,ACT,ID=BNSNACER,SCOPE=ALL
+			-	/V NET,ACT,ID=BNCSRSLM,SCOPE=ALL
+			-	/V NET,ACT,ID=BNCSARAW,SCOPE=ALL 
+ 
+[‎4/‎05/‎2026 08:45]  MARIA GRACIELA CORDOVA SOLIS:  
+En caso no levantar, 
+	 -chekar el toldvini se haya ejecutado
+	 -verificar que el estado DG00 sea la fecha de hoy,
+	 -reiniciar el windows del servidor en calidad01p.
+	 -reiniciar el tp. 
+ 

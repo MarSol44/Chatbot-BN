@@ -1,0 +1,172 @@
+*----------------------------*
+      ORDEN DE REINICIO
+*----------------------------*
+------*1. BAJAR
+------
+ENF (AL BAJAR EL ENF SE BAJA TAM BIEN EL CCITCP)
+    PASOS:
+    1. ESCRIBIR /P ENF
+    2. REVISAR LOG Y RESPONDER CON YES (EJEMPLO /16,Y)
+    3. REGRESAR CON ST Y ESCRIBIR /C ENF
+DCOMSVR
+    /C DCOMSVR
+PDATACOM
+    /C PDATACOM
+
+------*2. SUBIR
+-----
+PDATACOM
+    1. /F PDATACOM,EOJFREE   
+    2. /S PDATACOM 
+ENF (AL SUBIR EL ENF SE SUBE TAMBIEN EL CCITCP)
+    /S ENF,,,REINIT 
+DCOMSRV
+    /S DCOMSVR 
+	
+	
+----------------
+PARA BAJAR LOS CICS HAY QUE ENTRAR A CADA CICS Y ESCRIBIR COMANDO:
+CEMT P SHUT I
+-EN EL CASO DE LOS TP´s ANTES DE BAJARLOS CERRAR TOLD
+-EL TP HAY QUE SUBIRLO CON COLD
+
+-------------
+DEJAN TAREA:
+FOR
+JSON
+IX
+HUB
+
+?
+s
+
+------*ORDEN ACTUAL DE SUBIR LOS CICS
+------------------------------
+CCICSFOR ->  PCICSFOR  
+PCICSHUB 
+PCICHUB2 (ya no)
+CICSJSON 
+CCICSIX  
+CCICSTP (/S CCICSTP,M=COLD) -> DBDCCICS
+CCICSAP PCICSAP
+CCICSTP1 -> DBDCCIC1
+CCICSTP2 -> DBDCCIC2
+CCICSATM    cicsatm
+CCICTOR1 -> PCICTOR1
+CCICTOR2 
+CCICTR04  
+
+NO SUBIR !!!
+----------
+CCICTOR3  
+CICSJSN2  
+CCICTR04  
+
+-----------------
+
+1. CICSFOR
+CEMT S FILE(*) OPE ENA
+
+2. CICSJSON
+CEMT I TRANS(CPIH) 
+ENA
+
+
+3. --ABRIR TOLDS DG00	"Bajar los tolds"
+DBDCCICS
+DBDCCIC1
+DBDCCIC2
+
+DG00
+SUBIDA DEL SISTEMA   ABRIR CON X Y F4
+
+
+4.---Desactivar interfaces Y BORRE
+tor1	PCICTOR1
+mcmo
+DESACTIVAR TODAS LAS INTERFACES Y BORRE 
+x f4
+Activar
+x f4
+
+
+
+
+*TOR1, funciona con TP1
+----------------------------------------------------------------------------------------------------------------------------------------------------
+----------------------
+**---CASO ERRORES---**
+----------------------
+
+
+**--------**
+Cuando falla BDUC
+**--------**
+CCICSFOR
+CCICSTP  /S CCICSTP,M=COLD
+CCICSTP2
+CICSJSON
+PCICSHUB
+CCICSIX 
+ 
+
+
+
+**--------**
+Cuando no funciona el APP
+**--------**
+
+1. 
+Cuando el app esta mal -> HUB y TP2
+2.
+
+PARA VER CONEXION HOST CON DIST
+http://10.1.1.12:30661/GENAPP/NCMI9999
+*/
+
+CICSJSON
+TRX DEBE ESTAR HABILITADA
+CEMT I TRANS(CPIH*)  
+ 
+
+3.
+bajar cics en orden chiquitos*
+TP siempre /s ####,M=cold
+
+TODOS LOS TPS luego de /#,go
+dg00
+admin
+subida
+
+
+
+
+**--------**
+Cuando no funciona el POS
+**--------**
+
+mcmo -> en el TOR 1, para POS
+
+FECHA Y HORA EN EL POS:
+
+ERROR en fecha y hora en POS-> TOR1 y TP1
+
+
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+----------------------
+**---TRUCOS---**
+----------------------
+TSO TRUCOS
+f12 es el "+ enter" de ROSCOC
+cntrl + p
+
+
+CICS TRUCOS
+cesf logoff
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+----------------------
+**---TEORIA---**
+----------------------

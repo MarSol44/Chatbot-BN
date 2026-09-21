@@ -1,0 +1,63 @@
+BACKUP DE TABLA EN CERTI:
+1. Debemos conococer primero cuanto tiene de longitud la tabla, para esto usamos el DRDBFIL
+- Ejemplo: C20     BNMCF20                     75      MOVIMIENTO DE CTA. CTE. M.E.
+2. Para conocer la cantidad de registros de la tabla, usamos el DBREPORT
+3. Se usa el job EXTRACT para sacar el backup de la tabla:
+- Se crea catalogado, verificando que no exista
+- Se usa la formula para determinar cuántos cilindros se deberían usar: 
+	VAR1 = LONREG*CANREG      
+	VAR2 = BLOQUEO*2        
+	TRK = [valor entero(VAR1/ VAR2) + 1 ] * 2
+	1 CYL = 15 TRAKS                
+
+
+- Ejemplo:
+	var1= 75*299=22425
+	var2= 7500*2=15000
+	trk=(entero(22425/15000)+1)*2
+	trk=4
+	1 cyl=15trks
+- Se modifica la base y la tabla, el blksize debe ser múltiplo de la longitud
+- Se verifica que se hayan grabado el total de records
+- Se guarda el nombre del catalogado para futuras restauraciones
+
+
+------------------------------------------------------------------------------------------
+--> AQUÍ SE DEBE AVISAR AL ÁREA
+EN TSO:
+1. Accedemos al PDATACOM
+	pre pdatacom
+	?   (al costado izquierdo del PDATACOM )
+	S   (al costado izquierdo del JESMSGLG)
+	bot (para ir al último)
+	F11 (para ir a la derecha)
+2. colocamos el comando:
+	/f pdatacom,access off,041  (para ver en qué cics esta activa la base)
+3. ingresamos a cada cics y se cierra la base:
+	DBOC CLOSE=041
+Nota: solo algunas bases están activas en el DCOMSVR, y solo en estos casos se debe cerrar:
+	/C DCOMSVR (para cerrar)
+	/S DCOMSVR (para abrir)
+4. colocamos el comando:
+	/f pdatacom,access off,041  (para ver la situación de la base)
+	/F PDATACOM,CLOSE 041  (para cerrar la base) 
+	/f pdatacom,access off,041 (para corroborar que esté la base cerrada)
+
+
+
+EN ROSCOC:
+1. Usamos el job RESTSI4
+- se modifica la tabla, la base y se coloca el catalogado a restaurar
+- submitir y se verifica que haya terminado ok, con la cantidad de registros que debió copiar a la tabla
+
+
+
+EN TSO:
+1. Verificamos la situación de la tabla
+	/F PDATACOM,ACCESS WRITE,041
+2. ingresamos a cada cics para abrir la base:
+	DBOC OPEN=041
+3. y verificamos nuevamente la situación de la base para corroborar que esté abierta
+	/F PDATACOM,ACCESS WRITE,041     
+4. debe mostrar el siguiente mensaje:
+	BASE 041 ACCESS WRITE (BASE IS OPEN WRITE) 

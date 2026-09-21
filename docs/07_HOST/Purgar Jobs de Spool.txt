@@ -1,0 +1,82 @@
+ROSCOE
+--------
+-----*Para borrar por prefijo
+CON CMD $POJOB(PDBSPI**)                                
+CON CMD $POJOB(TOLDVI**) 
+CON CMD $POJOB(COPY**) 
+CON CMD $POJOB(INCAD01V)
+               
+CON CMD /$PO JOB Q,Q=AKJOWS,DAYS>5 			BORRAS   POR CLASE  Y SOLO DEJAS  1 DIA
+CON CMD $POJ(1-99999),days>45
+CON CMD E PCALH,SRVCLASS=STCVAR
+
+---------------------------------------------------------------
+TSO
+----
+/$PO JOB Q,Q=AKJOWS,DAYS>1
+
+-----*Purgar spool tso
+---
+pre *
+st
+F8
+p
+//=
+//
+
+
+-----*ver spool en tso
+---------------
+/$dspl
+
+
+-----*Consumo CPU
+---------------
+pre *
+da
+
+
+-----*PURGAR JOB EN ROSCOE
+--------------------
+CON CMD $PJ4536
+CON CMD $POJOB(TOLD*)
+
+
+-----*cancelar un job POR roscoe
+------
+CON CMD $CJ(numero de job)
+por ejemplo CON CMD $CJ3211
+
+
+cancelar job esperar respuesta R o C
+/numero,c 
+(numero= el que sale con *)
+-----------------------------------------
+
+
+
+-----*para botar usuario TSO
+----------------------
+
+1. ingresar a roscoe
+2. escribir con cmd $c U=powb 
+
+1. ingresar a tso
+2. escribir /c u=powb 
+
+con cmd $C TSU=PCALH
+
+-----------------------------------
+
+
+
+
+
+bn_biometrico / bn_b10m3tr1c0.c19 
+
+--	ACTUALIZA LA IP DEL SERVIDOR
+UPDATE DB2SARA.THLPDET SET TXTHLP='10.7.106.69' WHERE CODHLP='03707';
+commit;
+
+--	CONSULTA LA IP DEL SERVIDOR
+SELECT * FROM DB2SARA.THLPDET WHERE CODHLP='03707'; 

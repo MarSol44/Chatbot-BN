@@ -1,0 +1,65 @@
+* Eliminar contraseñas anteriores y poder ponerle la misma * 
+EN EL TP
+ceci delete f(stf21) into(&r) ridfld('krvc') gteq update 
+
+
+clky
+opcion 7 
+opcion 4
+* No funciona con usuarios de roscoc
+
+--------------------------
+
+
+buscar nombre corte de VSAM
+CEMT I FILE(*) DSN(nombre largo vsam)
+
+CEMT I FILE(*) DSN(CSOMP.V.D1D.PADRE.F02.DATA)
+
+CEMT I FILE(*) DSN(CGTGI.V.D1D.MAEGIRO.CZFFGI.F01)
+INCAINP
+
+CEMT I FILE(*) DSN(CVISA.V.D1D.IN90.OUTPUT.F01)
+INCAOUT 
+
+
+
+IP 10.7.106.17
+Usuario oracle
+Clave cert10$2024
+
+
+http://srv1capjv21.bn.com.pe:8003/
+
+mjimenez
+cont.123 
+
+GLV3... esta en el AP
+la cuenta es GRG y la clave es : GRGX
+
+
+*--Usuario--*
+krvc
+krvc.001
+
+mdur
+mdur.001
+
+Calh
+Calh.001
+
+
+*---usuarios de 07Invoice---*
+MVFM
+MVFM.001
+
+SHDF
+SHDF.001
+
+michu34.
+rmhc.001
+
+
+
+
+

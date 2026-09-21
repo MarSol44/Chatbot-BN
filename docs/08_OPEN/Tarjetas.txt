@@ -1,0 +1,17 @@
+-------------------------------
+* Maximos intentos Tarjetas *
+-------------------------------
+
+En el TP
+nc00
+f5
+tvf89
+poner numero de la tarjeta
+
+A01
+030
+NTARJ
+ 
+N intentos:0
+40
+0

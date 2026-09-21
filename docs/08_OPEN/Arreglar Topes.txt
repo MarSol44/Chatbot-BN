@@ -1,0 +1,192 @@
+*----------------------*
+Arreglar Max. Topes
+*----------------------*
+Entrar a desarrollo:
+0. Se ingresa 
+LOGON APPLID=DCICSFOR (PARA INGRESAR)  / CESF LOGOFF ( PARA SALIR)
+CNTRL
+
+
+1. Se cierra el VSAM en el For para correrlo.
+CEMT S FILE(TVF70) 
+CLO DIS (PARA CERRAR)
+
+2. Se corre el JCL
+LOGON APPLID=BNROSB (Entrar a PERSONAL COM.)
+(POR EMULACION ES: ROSCOD)
+JCL: DPAHD111 o tmb TOPTES
+
+3. Se vuelve a abrir el VSAM
+CEMT S FILE(TVF70) OPE ENA (PARA ABRIR)  
+
+
+
+*----------------------*
+Reporte/Extract
+*----------------------*
+Para generar el archivo:
+1. En SSH Secure File-conectar servidor
+cert: 10.7.50.9.1
+desa: 10.7.50.8.1
+
+
+DESARROLLO:
+10.7.50.81
+A$gurn19
+
+2. espmenu
+3. numero 2
+4. numero 3
+
+PARA REPORTES:			en el WinSCP
+4.1 Numero 1   			"report"
+
+
+PARA EXTRACTS:
+4.2 Numero 3			"log"
+
+
+
+
+Para hacer el 
+
+*-----------------------*
+*	Cuenta desarrollo	*
+*-----------------------*
+DPDPM
+STALIN$2
+$
+libreria: D0W
+
+
+
+===============================
+*      DESBLOQUEAR TARJETAS  - PRIMERA MANERA *
+===============================
+0. Consultas
+DAPY2K
+AT01 
+10(consultas) 
+01(detalles)
+Ingresar N° Tarjeta
+
+
+usuario: DVCC
+pass: Hola.321  o   yamil111
+
+1- 
+DTPY2K 
+CZ79
+A01C
+
+Ingresar tarjeta + 1
+Inicio      contenido
+  001           0
+  024           1
+  
+ 
+
+VERIFICAR: 
+CZ29
+A01C
+
+Ingresar tarjeta + 1
+(si esta con 0 al inicio esta ok)
+
+2- SINCRONIZAR LA TARGETA
+
+A01C
+DAPY2K 
+AT01 
+OP(14) 
+
+Dijitar la tarjeta (sin 1 al final) -> F4
+
+===============================
+*      DESBLOQUEAR TARJETAS - SEGUNDA MANERA  *
+===============================
+0. Consultas
+DAPY2K
+AT01 
+10(consultas) 
+01(detalles)
+Ingresar N° Tarjeta
+
+
+usuario: DVCC
+pass: Hola.321  o   yamil111
+
+1. 
+en ROSCOD:
+L05.QATF01X 
+
+DPDPM
+STALIN$2
+$
+libreria: D0W
+
+
+2- SINCRONIZAR LA TARGETA
+
+A01C
+DAPY2K 
+AT01 
+OP(14) 
+
+Dijitar la tarjeta (sin 1 al final) -> F4
+
+
+usuario: DVCC
+pass: Hola.321  o   yamil111
+
+
+4214100310655958
+
+4214100010651703
+4214100010651463
+
+
+
+
+
+*--------*
+ERRORES EN SW
+*------------*
+
+
+1. 
+dg00
+admin (la 1era opcion)
+consultar log
+
+ejm: 0001864 N 105844 0013 0013 S 0046 4558 SAW 030 10 EN0612        CUENTA NO EXIST
+
+
+2. Entrar al cic
+a DESA.PTOLD.MASTER.CICS(ATCA9341)                                              
+
+CZ29
+X
+DPAHUE
+
+
+
+
+
+
+*-----------*
+copia los VSAM de certi a desarrollo
+*------------*
+CALIDAD
+A P74.BACKLOGI
+
+DESA
+Entrar con usuario: merge02, contraseña: 
+A P10.RESTLOGI
+A P10.FTPLOGI
+
+
+
+USUARIOS DESA:
+powb
+mia00019

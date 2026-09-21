@@ -1,0 +1,49 @@
+RESUMEN:
+	VAR1 = LONREG*CANREG      
+	VAR2 = BLOQUEO*2        
+	TRK = [valor entero(VAR1/ VAR2) + 1 ] * 2
+	1 CYL = 15 TRAKS                
+	
+----------
+*conocer longreg y canreg -> dbrepor+
+
+Var1 = Lonreg*canreg
+
+	Donde: 
+	canreg = cantidad de registros
+	Lonreg = longitud del registro
+
+Var2 = bloqueo*2
+	Donde:
+	bloqueo = BLKSIZE OPTIMO
+
+Trk = (int(Var1/ Var2) + 1) * 2 Este sería el espacio en tracks
+es una formula
+para calcular el espacio en tracks:
+
+
+1 CYL = 15 traks
+---
+Ejemplo de (NEW,CATLG)
+
+SORTOUT  DD DSN=CSIUC.S.DPF40.F0801214,DISP=(NEW,CATLG),     
+            DCB=(RECFM=FB,BLKSIZE=25000,LRECL=500),UNIT=3390,
+            VOL=SER=(BNC034,BNC035,BNC036,BNC037,BNC041),    
+            SPACE=(CYL,(1000,1000),RLSE)                     
+Donde:
+DISP=(NEW,CATLG): Nuevo Catalogado
+RECFM=FB: Archivo secuencial, todos los registros miden lo mismo
+BLKSIZE: Block Size
+LRECL: Longitud de Registro
+UNIT=3390: que va a usar los volumenes que se le indiquen
+SPACE=(CYL,(1000,1000),RLSE) : La configuración en cilindros, en este caso le estamos diciendo que inicialmente lo cree con mil cilintros y crezca de mil en mil.
+----
+
+var1 = 500 * 12,601,062 = 6,300,531,000
+var2 = 32500 * 2 = 65000
+
+Trks = (int(6,300,531,000 / 65000)) + 1) * 2
+Trks = (1,575,132 + 1) * 2
+Trks = 193,864
+
+

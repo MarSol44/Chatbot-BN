@@ -1,0 +1,13 @@
+srv1capwa4.bn.com.pe/AdmTarjetas
+
+
+
+dbdccics
+cz16
+renombrar el terminal con la fecha actualizada
+-- colocar el terminar
+-- obviar el usuario
+-- colocar la fecha de hoy 
+
+F6 --- F6 
+

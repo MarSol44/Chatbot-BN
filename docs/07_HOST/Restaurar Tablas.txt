@@ -1,0 +1,200 @@
+DBEXTEND - cuando el índice de dicha base está lleno
+DBMOVE
+
+-----------------------------------------------------------------------------------------
+* BK TABLA *
+------------------------------------------------------------------------------------------------------------------
+
+PARA REALIZAR BK DE UNA TABLA
+-----------------------------
+USAR JCL BACKUP (AWS P74)
+REVISAR CUANTOS REGISTROS TIENE ESA TABLA PARA VER LA CANTIDAD DE CILINDROS A UTILIZAR
+REVISAR LA LONGITUD DE LA TABLA PARA COLOCAR EN EL LRECL Y BLKSIZE
+SI LA TABLA ES GRANDE USAR PREFIJOS CSIUC O CMIGDAT
+GUARDAR EL NOMBRE DEL CATALOGADO BACKUP PARA USARLO EN EL PROCESO DE RESTORE
+
+
+
+Ingresar al TSO
+sd.st
+pre pdatacom
+en la 1ra linea que se esta ejcutando poner ?
+en el JESMSGLG colocar S
+
+ir a la ultima linea (M F8)
+/F PDATACOM,ACCESS OFF,040 (para ver en qué cics esta activa la base)
+2 veces enter
+F8
+comprobar que salga ACCESS OFF,041 
+
+ejecutar el cierrabd
+** cerrar la base de la tabla (040)
+
+/F PDATACOM,CLOSE 040 (para cerrar la base) 
+comprobar que salga CLOSE 040 
+
+Editar y Ejecutar restabla (tabla y base)
+
+Ingresar al TSO
+/F PDATACOM,ACCESS WRITE,040
+enter 2 veces
+M F8 (ir al ultimo y comprobar que diga ACCESS WRITE,041)
+
+Ejecutar abrebase (abrir las bases)
+
+/F PDATACOM,ACCESS WRITE,040
+M F8 o BOT (ir al ultimo y comprobar que diga OPENED BASE 41)
+
+
+
+
+PARA REALIZAR BK DE UNA TABLA EN CERTI  (ejecutar Backup)
+-----------------------------
+
+1. Debemos conococer primero cuanto tiene de longitud la tabla, para esto usamos el 
+dis DRDBFIL
+- Ejemplo: C20     BNMCF20                     75      MOVIMIENTO DE CTA. CTE. M.E.
+longitud de la tabla: 75
+
+T24
+long 630
+
+LONG 500
+
+2. Para conocer la cantidad de registros de la tabla, usamos el 
+DBREPORT
+DBID (base)
+numero de registros: 
+
+T24
+655,169  
+
+3. Se usa el job EXTRACT/ BACKUP  para sacar el backup de la tabla:
+
+- Se crea catalogado, verificando que no exista
+- Se usa la formula para determinar cuántos cilindros se deberían usar: 
+	VAR1 = LONREG*CANREG      
+	VAR2 = BLOQUEO*2        
+	TRK = [valor entero(VAR1/ VAR2) + 1 ] * 2
+	1 CYL = 15 TRAKS                
+- Ejemplo:
+	var1= 75*299=22425
+	var2= 7500*2=15000
+	trk=(entero(22425/15000)+1)*2
+	trk=4
+	1 cyl=15trks
+cilindros usados:
+- Se modifica la base y la tabla, el blksize debe ser múltiplo de la longitud
+- Se verifica que se hayan grabado el total de records
+- Se guarda el nombre del catalogado para futuras restauraciones
+ 
+
+
+
+------------------------------------------------------------------------------
+* Restaurando TABLA *
+------------------------------------------------------------------------------
+
+RESTAURAR TABLA:
+1. Busco los cics donde la base esta abierta-> Cierro las bases en esos cics
+en c/u: dboc close=#base
+
+2. Sub Backup
+nombre de archivo y cuantos registros tiene
+
+3. Sub p74.REST 
+hay dos opciones:
+- REST sin sortworks es pq <2Millones de registros
+- Rest con sortworks >2M
+*le cambio nombre, tabla y base
+
+4. Abrir la base en los cics
+comando #base
+
+PARA REALIZAR RESTORE DE UNA TABLA
+----------------------------------
+CERRAR LA BASE DE LA TABLA QUE SE VA A RESTAURAR
+INGRESAR A TSO
+/F PDATACOM,ACCESS OFF,040 (EJEMPLO BASE 040)
+VER EL MENSAJE EN QUE CICS ESTAN ABIERTAS LAS BASES
+INGRESAR A CADA CICS Y CERRAR LA BASE
+/F PDATACOM,CLOSE 040 
+EJECUTAR JCL RESTABLA Y RESTT01 (SI LA TABLA TIENE POCOS REGISTROS Y MUCHOS REGISTROS RESPECTIVCAMENTE) 
+EDITAR NOMBRE DE LA TABLA Y BASE EN CADA JCL SEGUN CORRESPONDA
+LUEGO DE RESTAURAR ABRIR LA BASE
+/F PDATACOM,ACCESS WRITE,040
+
+
+INGRESAR A CADA CICS DONDE SE CERRO LA BASE Y ABRIRLA
+/F PDATACOM,ACCESS WRITE,040
+
+
+
+/F PDATACOM,OPEN 040
+
+PARA REALIZAR RESTORE DE UNA TABLA
+----------------------------------
+--> AQUÍ SE DEBE AVISAR AL ÁREA
+EN TSO:
+1. Accedemos al PDATACOM
+	pre pdatacom
+	?   (al costado izquierdo del PDATACOM )
+	S   (al costado izquierdo del JESMSGLG)
+	bot (para ir al último)
+	F11 (para ir a la derecha)
+2. colocamos el comando:
+	/f pdatacom,access off,041  (para ver en qué cics esta activa la base)
+
+3. ingresamos a cada cics y se cierra la base:
+	DBOC CLOSE=041
+Nota: solo algunas bases están activas en el DCOMSVR, y solo en estos casos se debe cerrar:
+	/C DCOMSVR (para cerrar)
+	/S DCOMSVR (para abrir)
+
+4. colocamos el comando:
+	/f pdatacom,access off,041  (para ver la situación de la base)
+	/F PDATACOM,CLOSE 041  (para cerrar la base) 
+	/f pdatacom,access off,041 (para corroborar que esté la base cerrada)
+
+
+
+EN ROSCOC:
+1. Usamos el job RESTSI4
+EJECUTAR JCL RESTABLA Y RESTT01 
+(SI LA TABLA TIENE POCOS REGISTROS Y MUCHOS REGISTROS RESPECTIVCAMENTE) 
+- se modifica la tabla, la base y se coloca el catalogado a restaurar
+- submitir y se verifica que haya terminado ok, con la cantidad de registros que debió copiar a la tabla
+EDITAR NOMBRE DE LA TABLA Y BASE EN CADA JCL SEGUN CORRESPONDA
+
+
+EN TSO:
+1. Verificamos la situación de la tabla
+	/F PDATACOM,ACCESS WRITE,041
+2. ingresamos a cada cics para abrir la base:
+	DBOC OPEN=041
+3. y verificamos nuevamente la situación de la base para corroborar que esté abierta
+	/F PDATACOM,ACCESS WRITE,041     
+4. debe mostrar el siguiente mensaje:
+	BASE 041 ACCESS WRITE (BASE IS OPEN WRITE) 
+
+
+/F PDATACOM,ACCESS ON,040 
+
+
+------------------------------------------------------------------------------
+* Eliminar datos de la TABLA *
+-------------------------------------------------------------------
+el jcl  delpff01 - borra toda la tabla
+
+
+
+
+
+
+
+
+
+
+
+------------------------------------------------------------------------------------------
+

@@ -1,0 +1,260 @@
+       IDENTIFICATION DIVISION.                                         00000010
+      *-----------------------*                                         00000020
+       PROGRAM-ID.    RHDL5102.                                         00000030
+       AUTHOR.        NELSON DHA                                        00000040
+      *REMARKS.                                                         00000050
+      ******************************************************************00000060
+      *            SISTEMA .-   RECURSOS HUMANOS                        00000070
+      *            OBJETIVO.-   RELACION DE DEPOSITOS C.T.S POR BANCO   00000080
+      *            AMBIENTE.-   PROGRAMA BATCH                          00000090
+      *            ARCHIVOS.-                                           00000100
+      *               INPUT     DISCO  AREA SCRATCH DE PLANILLAS        00000110
+      *               -----                                             00000120
+      *               OUTPUT    PRT01    LISTADOS                       00000130
+      ******************************************************************00000140
+       ENVIRONMENT DIVISION.                                            00000150
+      *---------------------                                            00000160
+       CONFIGURATION SECTION.                                           00000170
+       INPUT-OUTPUT SECTION.                                            00000180
+       FILE-CONTROL.                                                    00000190
+      *------------*                                                    00000200
+           SELECT DISCO      ASSIGN TO DA-3350-S-SYS010.                00000210
+           SELECT PRT01      ASSIGN TO UR-1403-S-SYS005.                00000220
+                                                                        00000230
+       DATA DIVISION.                                                   00000240
+       FILE SECTION.                                                    00000250
+      *------------*                                                    00000260
+       FD  DISCO           LABEL RECORD   STANDARD                      00000270
+                           RECORD CONTAINS  80 CHARACTERS               00000280
+                           BLOCK CONTAINS 100 RECORDS                   00000290
+                           DATA  RECORD   IS RDISCO.                    00000300
+       01  RDISCO.                                                      00000310
+           02 DIS-CEMPLE        PIC 9(07).                              00000320
+           02 DIS-FEC-HEXTRA    PIC 9(08).                              00000330
+           02 DIS-HEXTRAS.                                              00000340
+              03 DIS-HORA       PIC 9(02).                              00000350
+              03 DIS-MINU       PIC 9(02).                              00000360
+           02 DIS-MODO-COBRO    PIC 9(01).                              00000370
+           02 DIS-ESTADO        PIC 9(01).                              00000380
+                                                                        00000390
+       FD  PRT01           LABEL RECORDS ARE OMITTED                    00000400
+                           DATA  RECORD  IS  RPRT01.                    00000410
+       01  RPRT01                      PIC X(133).                      00000420
+      *-----------------------*                                         00000430
+       WORKING-STORAGE SECTION.                                         00000440
+      *-----------------------*                                         00000450
+       01  LCP-ABND-CODE               PIC S999 COMP VALUE +519.        00000460
+       01  WE-ESPECIALES.                                               00000470
+           02 WE-FECHA-AMD                           VALUE  ZEROES.     00000480
+              03 WE-ANO                PIC 9(04).                       00000490
+              03 WE-MES                PIC 9(02).                       00000500
+              03 WE-DIA                PIC 9(02).                       00000510
+           02 WE-FECHA-DMA                          VALUE  SPACES.      00000520
+              03 WE-DIA                PIC 9(02).                       00000530
+              03 FILLER                PIC X(01).                       00000540
+              03 WE-MES                PIC 9(02).                       00000550
+              03 FILLER                PIC X(01).                       00000560
+              03 WE-ANO                PIC 9(04).                       00000570
+       01  WE-TOTAL                    PIC 9(09)V99 VALUE ZEROES.       00000580
+       01  WC-CONTADORES                            VALUE  ZEROES.      00000590
+           02 WC-GRAB-CAT              PIC 9(05).                       00000600
+           02 WC-LEIDOS                PIC 9(05).                       00000610
+           02 WC-NREG                  PIC 9(05).                       00000620
+           02 WC-NREG-BANCO            PIC 9(05).                       00000630
+           02 WC-GRABADOS              PIC 9(05).                       00000640
+           02 WC-LINEAS                PIC 9(05).                       00000650
+           02 WC-PAGINAS               PIC 9(05).                       00000660
+       01  WA-ACUMULADORES                          VALUE  ZEROES.      00000670
+           02 WA-IMPORTE               PIC 9(13)V99.                    00000680
+           02 WA-IMPORTE-BCO           PIC 9(13)V99.                    00000690
+           02 WA-IMPORTE-ME            PIC 9(13)V99.                    00000700
+           02 WA-IMPORTE-ME-BCO        PIC 9(13)V99.                    00000710
+       01  WS-SWITCHES.                                                 00000720
+           02 WS-FIN-DISCO             PIC X(01)    VALUE SPACES.       00000730
+              88 FIN-DISCO                          VALUE 'S'.          00000740
+      **-----------**  TITULOS  PARA  EL  DETALLE  **-----------**      00000750
+       01  RT01-TITULO.                                                 00000760
+           02  FILLER                  PIC X(001)   VALUE  SPACES.      00000770
+           02  FILLER                  PIC X(018)   VALUE               00000780
+                                                   'BANCO DE LA NACION'.00000790
+           02  FILLER                  PIC X(098)   VALUE  SPACES.      00000800
+           02  FILLER                  PIC X(010)   VALUE               00000810
+                                                   'PAG.      '.        00000820
+           02  RT01-PAGINA             PIC X(005)   VALUE  '1'.         00000830
+       01  RT02-TITULO.                                                 00000840
+           02  FILLER                  PIC X(001)   VALUE  SPACES.      00000850
+           02  FILLER                  PIC X(018)   VALUE               00000860
+                                                   'ADM. DE HABERES   '.00000870
+           02  FILLER                  PIC X(096)   VALUE  SPACES.      00000880
+           02  FILLER                  PIC X(008)   VALUE  'FECHA   '.  00000890
+           02  RT02-FECHA              PIC X(010)   VALUE  SPACES.      00000900
+       01  RT03-TITULO.                                                 00000910
+           02  FILLER                  PIC X(001)   VALUE  SPACES.      00000920
+           02  FILLER                  PIC X(008)   VALUE  'RHDL5102'.  00000930
+           02  FILLER                  PIC X(042)   VALUE  SPACES.      00000940
+           02  FILLER                  PIC X(80)    VALUE               00000950
+           '  RELACION DE EMPLEADOS QUE TIENEN DEPOSITOS C.T.S.'.       00000960
+       01  RT03A-TITULO.                                                00000970
+           02 FILLER                   PIC X(053)   VALUE  SPACES.      00000980
+           02 RT03-ABANCO              PIC X(020).                      00000990
+           02 FILLER                   PIC X(003)   VALUE ' - '.        00001000
+           02 RT03-MONEDA              PIC X(018)   VALUE SPACES.       00001010
+           02 RT03-FILLER              PIC X(015)   VALUE SPACES.       00001020
+       01  RT04-TITULO                              VALUE  ALL '-'.     00001030
+           02  FILLER                  PIC X(112).                      00001040
+           02  RT04-LFIN               PIC X(020).                      00001050
+                                                                        00001060
+       01  RT05-TITULO.                                                 00001070
+           02  FILLER              PIC X(001) VALUE SPACES.             00001080
+           02  FILLER              PIC X(115) VALUE                     00001090
+           ' CODIGO   N O M B R E                                       00001100
+      *     9999999   1234567890123456789012345678901234567890  XX-XXX-X00001110
+      -    '           IMPORTE M.N.                                '.   00001120
+      *     -XXXX   ZZZ,ZZZ,ZZZ.ZZ.                                     00001130
+           02  RT05-FILLER         PIC X(030) VALUE SPACES.             00001140
+      ***--------------DETALLES-------------------------------------*** 00001150
+       01  RD01-DETALLE.                                                00001160
+           02  FILLER              PIC X(001).                          00001170
+           02  RD01-CEMPLE         PIC X(07).                           00001180
+           02  FILLER              PIC X(003).                          00001190
+           02  RD01-AEMPLE         PIC X(040).                          00001200
+           02  FILLER              PIC X(002).                          00001210
+      *****-----------------------------------------------------*****   00001220
+       COPY RGES413.                                                    00001230
+       COPY RHTBANCO.                                                   00001240
+      *****-----------------------------------------------------*****   00001250
+       01  CCCA-UPSIS.                                                  00001260
+           02  CCCA-UPSIS-00     PIC  X(001).                           00001270
+             88 V-UPSI0-XYZ VALUE '1'.                                  00001280
+           02  CCCA-UPSIS-01     PIC  X(001).                           00001290
+             88 V-UPSI1-XYZ VALUE '1'.                                  00001300
+           02  CCCA-UPSIS-02     PIC  X(001).                           00001310
+             88 V-UPSI2-XYZ VALUE '1'.                                  00001320
+           02  CCCA-UPSIS-03     PIC  X(001).                           00001330
+             88 V-UPSI3-XYZ VALUE '1'.                                  00001340
+           02  CCCA-UPSIS-04     PIC  X(001).                           00001350
+             88 V-UPSI4-XYZ VALUE '1'.                                  00001360
+           02  CCCA-UPSIS-05     PIC  X(001).                           00001370
+             88 V-UPSI5-XYZ VALUE '1'.                                  00001380
+           02  CCCA-UPSIS-06     PIC  X(001).                           00001390
+             88 V-UPSI6-XYZ VALUE '1'.                                  00001400
+           02  CCCA-UPSIS-07     PIC  X(001).                           00001410
+             88 V-UPSI7-XYZ VALUE '1'.                                  00001420
+       01  PARM-WORK.                                                   00001430
+            02  FILLER             PIC X(01).                           00001440
+            02  DATE-PARM          PIC X(10).                           00001450
+            02  FILLER             PIC X(01).                           00001460
+            02  UPSI-PARM          PIC X(08).                           00001470
+            02  FILLER             PIC X(01).                           00001480
+      *----------------                                                 00001490
+       LINKAGE SECTION.                                                 00001500
+      *----------------                                                 00001510
+       01  PARM-DATA.                                                   00001520
+           02 PUNTERO             PIC S9(02).                           00001530
+           02 PARM-PASSED         PIC  X(21).                           00001540
+       PROCEDURE DIVISION.                                              00001550
+      *------------------*                                              00001560
+           ENTRY 'DBMSCBL' USING PARM-DATA.                             00001570
+           MOVE PARM-PASSED   TO PARM-WORK.                             00001580
+           MOVE UPSI-PARM     TO CCCA-UPSIS.                            00001590
+           PERFORM INICIAR-PROCESO.                                     00001600
+           PERFORM REALIZAR-PROCESO UNTIL FIN-DISCO.                    00001610
+           PERFORM TERMINAR-PROCESO.                                    00001620
+                                                                        00001630
+       INICIAR-PROCESO.                                                 00001640
+      *---------------*                                                 00001650
+           OPEN INPUT DISCO OUTPUT PRT01.                               00001660
+           PERFORM VALIDAR-FECHA.                                       00001670
+           IF FIN-DISCO                                                 00001680
+              DISPLAY '*  RHDL5102 * ARCHIVO VACIO ' STOP RUN.          00001690
+                                                                        00001700
+           MOVE DATE-PARM           TO RT02-FECHA.                      00001710
+           PERFORM IMPRIMIR-TITULOS.                                    00001720
+           PERFORM LEER-DISCO.                                          00001730
+                                                                        00001740
+       REALIZAR-PROCESO.                                                00001750
+      *----------------*                                                00001760
+           MOVE DIS-CEMPLE           TO RD01-CEMPLE.                    00001770
+           MOVE 'NOMBRE APELLIDOS'   TO RD01-AEMPLE.                    00001780
+                                                                        00001790
+           IF WC-LINEAS > 60                                            00001800
+              PERFORM IMPRIMIR-TITULOS.                                 00001810
+                                                                        00001820
+           WRITE RPRT01 FROM RD01-DETALLE AFTER 1.                      00001830
+           MOVE SPACES                 TO RD01-DETALLE.                 00001840
+           ADD 1                       TO WC-NREG WC-LINEAS             00001850
+                                          WC-NREG-BANCO                 00001860
+           PERFORM LEER-DISCO.                                          00001870
+                                                                        00001880
+                                                                        00001890
+                                                                        00001900
+       IMPRIMIR-TITULOS.                                                00001910
+      *----------------*                                                00001920
+           ADD 1                       TO WC-PAGINAS.                   00001930
+           MOVE WC-PAGINAS             TO RT01-PAGINA.                  00001940
+           MOVE DATE-PARM              TO RT02-FECHA.                   00001950
+           WRITE RPRT01 FROM RT01-TITULO  AFTER PAGE.                   00001960
+           WRITE RPRT01 FROM RT02-TITULO  AFTER 1.                      00001970
+           WRITE RPRT01 FROM RT03-TITULO  AFTER 1.                      00001980
+           WRITE RPRT01 FROM RT03A-TITULO AFTER 1.                      00001990
+           WRITE RPRT01 FROM RT03A-TITULO AFTER 0.                      00002000
+           WRITE RPRT01 FROM RT04-TITULO  AFTER 2.                      00002010
+           WRITE RPRT01 FROM RT05-TITULO  AFTER 1.                      00002020
+           WRITE RPRT01 FROM RT04-TITULO  AFTER 1.                      00002030
+           MOVE 7                      TO WC-LINEAS.                    00002040
+                                                                        00002050
+       LEER-DISCO.                                                      00002060
+      *----------*                                                      00002070
+           READ DISCO AT END MOVE 'S' TO WS-FIN-DISCO.                  00002080
+           IF NOT FIN-DISCO                                             00002090
+              ADD 1        TO   WC-LEIDOS.                              00002100
+                                                                        00002110
+       VALIDAR-FECHA.                                                   00002120
+      *--------------*                                                  00002130
+           MOVE    DATE-PARM           TO S413-DATE-PARM.               00002140
+           CALL   'SIGES413' USING RGES413                              00002150
+           IF  S413-RC = '00'                                           00002160
+               NEXT SENTENCE                                            00002170
+           ELSE                                                         00002180
+               DISPLAY '*SIGES413* FECHA PARM ERRADA:' S413-RC '.'      00002190
+               MOVE    2001        TO RETURN-CODE                       00002200
+               STOP RUN.                                                00002210
+                                                                        00002220
+       TERMINAR-PROCESO.                                                00002230
+      *----------------*                                                00002240
+           MOVE 'TOTAL GENERAL     ' TO RD01-AEMPLE.                    00002250
+           WRITE RPRT01 FROM RT04-TITULO  AFTER 2.                      00002260
+           WRITE RPRT01 FROM RD01-DETALLE AFTER 4.                      00002270
+           WRITE RPRT01 FROM RD01-DETALLE AFTER 0.                      00002280
+           WRITE RPRT01 FROM RT04-TITULO  AFTER 3.                      00002290
+           MOVE ZEROES                 TO RD01-DETALLE.                 00002300
+           DISPLAY 'TOTAL LEIDO        ' WC-LEIDOS.                     00002310
+           DISPLAY 'TOTAL IMPORTE      ' WA-IMPORTE.                    00002320
+           DISPLAY 'GRABADOS CATALOGADO' WC-GRAB-CAT.                   00002330
+           CLOSE DISCO PRT01.                                           00002340
+           GOBACK.                                                      00002350
+A1 = GET
+A2 = RHDL5102
+A3 = ASCII
+A4 = CRLF
+A5 =
+A6 =
+A7 =
+A8 =
+A1 = GET
+A2 = RHDL5102
+A3 = ASCII
+A4 = CRLF
+A5 =
+A6 =
+A7 =
+A8 =
+A1 = GET
+A2 = RHDL5102
+A3 = ASCII
+A4 = CRLF
+A5 =
+A6 =
+A7 =
+A8 =
+

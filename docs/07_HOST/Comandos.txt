@@ -1,0 +1,342 @@
+*--------------------------*
+        Ejecutar BD 
+*--------------------------*
+a p74.dbreport
+c l r
+a
+editamos la tabla y la base
+sub
+DBID= Base,AREA= tabla,
+
+DETALLE P74.DRDBFIL
+
+*--------------------------*
+     CREAR PARTICIONADO 
+*--------------------------*
+a d ctpct.s.reporte.rc+
+escribir "al" en el lado izquierdo del particionado ejm: al ctpct.s.reporte.
+cambiar el RCD por el nombre que deseamos
+enter y listo.
+
+*------------------------------*
+     GUARDAR EN MI PARTICIONADO 
+*------------------------------*
+REXP
+completamos el particionado (nombre)
+borrar * antes de dar enter
+
+*------------------------*
+     EXPORTAR COMPA 
+*------------------------*
+c j r
+a
+rexp
+ctpct.s.reporte.luis
+
+
+*------------------------*
+     EXPORTAR SPOOL 
+*------------------------*
+Entrar TSO -> sd.st 
+buscar JCL -> pre (jcl)  ejm: pre TOLDVINI
+buscar el job -> colocar s a lado del job: s TOLDVINI
+en comandos colocar
+1. PT ODSN 'CTPCT.S.REPORTE.LUIS' *
+2. PT;PT CLOSE 
+
+Luego ingresar a roscoc:
+buscar a ftpput con a en marisol, o con a ftp*
+editamos:
+
+1. nombre del spool .txt
+
+
+
+*-------------------------*
+      BASE DE DATOS, ver registros
+*-------------------------* 
+dis dbrep*
+
+*----------------------------------*
+           CERRAR BASES
+*----------------------------------*
+TSO : sd. st > pre pdatacom > ? al primero
+buscar JESMSGLG > s
+/f pdatacom,access off,120
+ROSCOC: buscar p74.CIERRABD (P74) > e
+reemplazar la base
+EN TSO 
+/F PDATACOM,CLOSE 120
+/f pdatacom,access off,120
+
+P85		145		589		CSOMP.S.P85145
+C21		57		500		DSOMP.S.C21.BD057.F231225		37594
+SI4		40		650		CSOMP.S.SI4040 
+
+*----------------------------------*
+           ABRIR BASES
+*----------------------------------*
+ABRIR BASE->
+TSO: SD.ST
+PRE PDATACOM
+? PDATACOM
+SJESMSGLG
+/F PDATACOM,ACCESS WRITE,120
+ROSCOC: buscar p74.ABREBASE ( (P74) > e
+reemplazar la base
+/f pdatacom,access off,180
+/F PDATACOM,ACCESS WRITE,180
+
+
+*----------------------------------*
+       FLUJO PARA BACKUPS
+*---------------------------------*
+EJECUTAR DRDBFIL O CONSULTAR JOB 4576 (SI LA TABLA ES NUEVA, ES NECESARIO EJECUTAR)
+BUSCAR LA LONGITUD DE LA TABLA A BACKUPEAR (LON = 400)
+EJECUTAR DBREPORT CON LA BASE Y OBTENER REGISTROS ( R = 12,582,889)
+OBTENER BLOCKSIZE:
+32500/LON=X,YZ 
+BLOCKSIZE = X*LON (x=valor entero)
+ESTE BLOCKSIZE UTILIZARLO PARA EL BACKUP.
+A P74.BACK+ -> SUB
+BUSCAR EL QUE REALICE BACKUP A CATALOGADO 
+BUSCAR A P74.RES+
+RECORDAR EDITAR LA TABLA Y BASE.
+
+*----------------------------------------------*
+          INSCRIBIR TRX EN CICS
+*----------------------------------------------*
+
+CEDA E G(*) TRANS(BI*) -> VER GRUPO Y PROFILE
+GRUPO FICO 
+PROFile XXXXAF00
+COPIAR GRUPO Y PROFILE PARA EL SIGUIENTE COMANDO:
+CEDA DEFINE TRANS(B100) GR(PCTMG) PROGR(SITB6100) PROF(XXXXTF00) 
+LUEGO INSTALAR LA TRX
+CEDA E G(*) TRANS(IG*) nos mostrara la transccion, se pone I al lado derecho para instalar la tx 
+
+CONSULTAR TRX INSCRITAS
+CEMT I TRA(IG*)
+*----------------------------------*
+        REVISION DE BASES
+*----------------------------------*
+A P74.DBREPORT -> INFO DE BASES (REGISTROS / TOTAL CYLINDROS / ESPACIO DISPONIBLE)
+A P74.DRDBFIL  -> INFO DE LONGITUD Y DESCP DE TABLAS 
+
+*---------------------------*
+		TRAER VSAM
+*---------------------------*
+PAHME.V.D1D.AHORROS.MAESTRO.F01 AHMEF01
+CAHME.V.D1D.AHORROS.MAESTRO.F05 NUEVO
+PMEDH.V.D1D.MAESTRO.AHOME.F01 MEDHF01
+CAHME.V.D1D.AHORROS.MAESTRO.F05 NUEVO
+
+CSAFE.X.D1D.CTACTEMN.SAFDDA.F01
+CSAFE.X.D1D.CTACTEMN.SAFDDA.F05
+
+PRIMERO BACKUP LOG ZIPEA VSAM LOG 0 BLK 32000
+DSOMP SIEMPRE NOMBRE
+en certi
+P74.FTPLOGI
+RESTLOGI
+	
+*----------------------------------*
+       BOTAR USER ROSCOE X TSO
+*---------------------------------*
+/F CROSCOE,FLUSH KEY=PCYCV,F
+/F CROSCOE,FLUSH KEY=PCYCV,SCOPE=ALL
+
+
+
+*----------------------------------*
+       BOTAR USER TSO X TSO
+*---------------------------------*
+/C U=PCYCV
+
+/FUERA POWB
+
+
+*----------------------------------*
+      CANCELAR PROCESO/JCL
+*---------------------------------*
+en ROSCOC:
+CON CMD $CJ(nombre) 
+
+en TSO: (normalmente es BNC1, casi siempre)
+/RO BNC0,CANCEL TOLDVINI
+
+
+*----------------------------------*
+     BORRAR HASTA LINEA FINAL 
+*----------------------------------*
+DB
+
+
+PCHRC
+hrc21
+
+*----------------------------------*
+            TRAER VSAM 
+*---------------------------------*
+
+LOGON APPLID(DCICSFOR) ingresar 
+para buscar vsam -> cemt i file (SAFDDA)
+buscar en desa BACKLOGI
+
+*-----------------------------*
+     REINICIO DE CICS TPS
+*-----------------------------*
+Ingresar TSO
+PRE *CIC* / PRE *CICS*
+Bajar TP con el comando /C CCICSTP
+Bajar TP1 con el comando /C CCICSTP1
+Bajar TP2 con el comando /C CCICSTP2
+
+Levantar el TP con el comando /S CCICSTP,M=COLD
+Levantar el TP1 con el comando /S CCICSTP1
+Levantar el TP2 con el comando /S CCICSTP2
+
+Eliminar dichos pendientes con el comando /número,go. 
+Escribir f Given      
+
+*-----------------------------*
+    LEVANTAMIENTO DE TOLD
+*-----------------------------*
+DBDCCICS / DBDCCIC1 / DBDCCIC2
+DG00
+ADMINISTRADOR DE RECURSOS
+SUBIDA DE SISTEMA (F4) 
+
+
+Agentes
+TP1 - TOLD dg00
+TOR1 - INTERFACES mcmo
+
+TP1 -> TC06 PARA MODIFICAR EL NUMERO DE OPERACIONES EN DISTINTAS TRANSACCIONES
+Opción 2 -> Opción 2
+
+*----------------------------*
+    REINICIAR PARA PÁGALO
+*----------------------------*
+CCICSFOR
+CCICSTP
+CICSJSON
+PCICSHUB
+PCICHUB2  
+
+ 
+TRX
+
+MEDHF01 - CMEDH.V.D1D.MAESTRO.AHOME.F01   nuevo: CSIRD.V.D1D.AHORROS.MAESTRO.F01
+
+JCL
+
+DPAHF01 - CSIUC.V.D1D.AHORROS.MAESTRO.F01      
+AHMEF01 - CAHME.V.D1D.AHORROS.MAESTRO.F01
+
+
+
+
+--------------------
+ROSCOE
+--------
+-----*Para borrar por prefijo
+CON CMD $POJOB(PDBSPI**)                                
+CON CMD $POJOB(TOLDVI**) 
+CON CMD $POJOB(COPY**) 
+CON CMD $POJOB(INCAD01V)
+               
+CON CMD /$PO JOB Q,Q=AKJOWS,DAYS>5 			BORRAS   POR CLASE  Y SOLO DEJAS  1 DIA
+CON CMD $POJ(1-99999),days>45
+CON CMD E PCALH,SRVCLASS=STCVAR
+
+---------------------------------------------------------------
+TSO
+----
+/$PO JOB Q,Q=AKJOWS,DAYS>1
+
+-----*Purgar spool tso
+---
+pre *
+st
+F8
+p
+//=
+//
+
+
+-----*ver spool en tso
+---------------
+/$dspl
+
+
+-----*Consumo CPU
+---------------
+pre *
+da
+
+
+-----*PURGAR JOB EN ROSCOE
+--------------------
+CON CMD $PJ4536
+CON CMD $POJOB(TOLD*)
+
+
+-----*cancelar un job POR roscoe
+------
+CON CMD $CJ(numero de job)
+por ejemplo CON CMD $CJ89669
+
+
+cancelar job esperar respuesta R o C
+/numero,c 
+(numero= el que sale con *)
+-----------------------------------------
+
+
+
+-----*para botar usuario TSO
+----------------------
+
+1. ingresar a roscoe
+2. escribir con cmd $c U=powb 
+
+1. ingresar a tso
+2. escribir /c u=powb 
+
+con cmd $C TSU=PCALH
+
+-----------------------------------
+
+
+
+
+
+bn_biometrico / bn_b10m3tr1c0.c19 
+
+--	ACTUALIZA LA IP DEL SERVIDOR
+UPDATE DB2SARA.THLPDET SET TXTHLP='10.7.106.69' WHERE CODHLP='03707';
+commit;
+
+--	CONSULTA LA IP DEL SERVIDOR
+SELECT * FROM DB2SARA.THLPDET WHERE CODHLP='03707'; 
+
+
+
+
+
+
+
+*----------------------------*
+    FORMATEAR TABLA
+*----------------------------*
+Tengo que saber la tabla 
+
+en el jcl: a P74.DELPFF01 
+
+
+
+
+
+
+

@@ -1,0 +1,10 @@
+*****************Verificacion de izipay***********
+entrar a INPE
+verificar que las fechas y los montos esten de acuerdo a la fecha
+actual
+
+.. problemas con la fecha anterior si se visualiza
+reiniciar el tor1 y el tp 
+
+.. problemas con los montos 
+pedir reinici al proveedor de izipay 

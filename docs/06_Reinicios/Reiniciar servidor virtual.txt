@@ -1,0 +1,25 @@
+EN CASO: 
+de que se haya caido emulación
+
+TEORIA:
+Servidores
+1 virtual  :  calidad01p (10.7.106.30)
+usuario: calidadagencias
+
+3 fisicos
+
+
+
+HACER:
+0. Conexion a escritorio remoto
+1. Entrar a operaciones Nodo SNA  
+2. Operators -> StopNode
+(para eliminar esos 4 rayitos)
+3. Apply configuracion -> Se sube cada archivo 
+4. Rayos: 
+- HOD = Hodnew
+- SARAWEB = Certif
+- CERTSNA3
+- CERTSNA5
+
+

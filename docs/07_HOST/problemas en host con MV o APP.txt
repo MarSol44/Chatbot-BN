@@ -1,0 +1,10 @@
+problemas el ingreso del login MV:
+reiniciar TP
+
+problemas el ingreso del APP:
+reiniciar TP2 y HUB1
+
+problemas al no visualizarse los montos:
+reiniciar TP,TP1,TP2
+HUB1
+
