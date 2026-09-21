@@ -37389,5 +37389,24 @@
     ],
     "source_filename": "docs/07_HOST/COBOL y Mainframe para QA Funcional.pdf",
     "added_at": "2026-09-21 16:58"
+  },
+  {
+    "id": "ADM-1f9cd81a",
+    "mod": "13",
+    "title": "PARA BAJAR UN CICS",
+    "body": "se puede hacer con /C nombre del cics o entrando al cics y le pones cemt p shut i",
+    "kw": [
+      "bajar",
+      "cemt",
+      "cics",
+      "entrando",
+      "hacer",
+      "nombre",
+      "pones",
+      "puede",
+      "shut"
+    ],
+    "source_filename": "(nota escrita en Admin)",
+    "added_at": "2026-09-21 17:24"
   }
 ]
