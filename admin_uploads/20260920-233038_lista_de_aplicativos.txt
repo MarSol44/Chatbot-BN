@@ -1,0 +1,36 @@
+Portal Interno BN
+
+Guía Telefónica BN
+
+Base de Datos Única de Clientes (BDUC) (Incluye accesos principales y espejos)
+
+Joomla! Spanish Certi
+
+Sistema de Administración de Tarjetas
+
+SARAWEB (Links para inicio de día)
+SARAWEB aplicativo
+
+COMP (Oracle 12c) - Sistema de configuración y mantenimiento de parámetros globales
+ORACLE VIEJO
+ORACLE NUEVO
+
+Págalo / WebSphere Integrated Solutions Console (Servicios)
+
+CQ (Clear Quest) - Seguimiento de mantenimientos de calidad
+
+Red Hat OpenShift
+
+MultiRed Virtual
+
+IVANTI - Herramienta de Gestión de Servicios TI
+
+Emulacion
+
+Personal
+
+App
+
+WIN SCP
+
+SSH Secure Shell Client

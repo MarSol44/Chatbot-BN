@@ -1,0 +1,1755 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Repositorio QA · Banco de la Nación</title>
+<style>
+:root{
+  --bg:#0A0E13;
+  --bg-side:#0C1218;
+  --surface:#131C25;
+  --block:#0F171F;
+  --line:#1D2A36;
+  --line-soft:#16212B;
+  --text:#C6D3DF;
+  --text-hi:#E8F0F7;
+  --dim:#63768A;
+  --dim-2:#4A5A6C;
+  --green:#3FD68A;
+  --green-dim:#2A8F5E;
+  --blue:#1D3A57;
+  --blue-hi:#2C5C8A;
+  --amber:#E0A458;
+  --amber-bg:rgba(224,164,88,.09);
+  --yellow-bg:#F5C518;
+  --yellow-card:#FFDE59;
+  --yellow-line:rgba(58,44,0,.25);
+  --yellow-dash:rgba(58,44,0,.45);
+  --yellow-ink:#3A2C00;
+  --yellow-btn:#3A2C00;
+  --red:#E5615E;
+  --mono:ui-monospace,"IBM Plex Mono","Cascadia Mono","SF Mono",Consolas,"Liberation Mono",monospace;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+::selection{background:rgba(63,214,138,.25)}
+
+.app{height:100vh;display:grid;grid-template-columns:312px 1fr}
+
+/* ================= SIDEBAR ================= */
+.side{background:var(--bg-side);border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+.side-head{padding:20px 22px 16px;border-bottom:1px solid var(--line)}
+.logo{display:flex;align-items:center;gap:9px;font-family:var(--mono);font-size:14px;letter-spacing:.09em;color:var(--green);font-weight:600}
+.pulse{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 0 0 rgba(63,214,138,.5);animation:pulse 2.6s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(63,214,138,.45)}70%{box-shadow:0 0 0 7px rgba(63,214,138,0)}100%{box-shadow:0 0 0 0 rgba(63,214,138,0)}}
+.ver{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--dim-2);margin-top:7px}
+
+.nav{flex:1;overflow-y:auto;padding:8px 0}
+.nav-item{display:flex;align-items:center;gap:18px;width:100%;text-align:left;padding:11px 22px;border-left:2px solid transparent;color:var(--text)}
+.nav-item .n{font-family:var(--mono);font-size:12px;color:var(--dim-2);min-width:16px}
+.nav-item .t{font-size:14.5px}
+.nav-item .flag{margin-left:auto;font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--amber);opacity:.7}
+.nav-item:hover{background:rgba(255,255,255,.028);color:var(--text-hi)}
+.nav-item:focus-visible{outline:1px solid var(--green);outline-offset:-2px}
+.nav-item[aria-current="true"]{background:rgba(63,214,138,.07);border-left-color:var(--green);color:var(--text-hi)}
+.nav-item[aria-current="true"] .n{color:var(--green)}
+.side-foot{border-top:1px solid var(--line);padding:14px 22px;font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--dim-2)}
+
+/* ================= MAIN ================= */
+.main{display:flex;flex-direction:column;min-height:0}
+.bar{display:flex;align-items:center;gap:16px;padding:16px 26px;border-bottom:1px solid var(--line)}
+.burger{font-family:var(--mono);font-size:18px;color:var(--dim);line-height:1;padding:2px 4px}
+.burger:hover{color:var(--green)}
+.bar .where{font-family:var(--mono);font-size:15px;color:var(--text-hi);letter-spacing:.01em}
+.bar .where .k{color:var(--green)}
+.bar .count{font-family:var(--mono);font-size:11.5px;color:var(--dim-2)}
+.bar .aigroup{margin-left:auto;display:flex;align-items:center;gap:12px}
+.aistate{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--dim-2);display:flex;align-items:center;gap:6px;white-space:nowrap}
+.aistate .dot{width:7px;height:7px;border-radius:50%;background:var(--dim-2);flex:none}
+.aistate[data-s="listo"] .dot{background:var(--green);box-shadow:0 0 7px var(--green)}
+.aistate[data-s="listo"]{color:var(--green)}
+.aistate[data-s="calentando"] .dot,.aistate[data-s="iniciando"] .dot{background:var(--amber);animation:blink 1.1s ease-in-out infinite}
+.aistate[data-s="calentando"],.aistate[data-s="iniciando"]{color:var(--amber)}
+.aistate[data-s="error"] .dot{background:#E06A5C}
+.aistate[data-s="error"]{color:#E06A5C}
+@keyframes blink{50%{opacity:.25}}
+.aitoggle{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--dim);border:1px solid var(--line);border-radius:5px;padding:5px 10px;background:var(--block);cursor:pointer}
+.aitoggle[aria-pressed="true"]{border-color:var(--green-dim);color:var(--green);background:rgba(63,214,138,.07)}
+
+/* ---- modo CHAT / ADMINISTRADOR ---- */
+.modeswitch{display:flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;font-family:var(--mono)}
+.modebtn{font-size:11px;letter-spacing:.08em;padding:6px 14px;color:var(--dim);background:var(--block)}
+.modebtn:hover{color:var(--text-hi)}
+.modebtn[aria-pressed="true"]{background:var(--green-dim);color:#06140D;font-weight:600}
+.modebtn.warn[aria-pressed="true"]{background:var(--amber);color:#2A1A05}
+
+.adminpanel{flex:1;min-height:0;display:flex;flex-direction:column;background:var(--yellow-bg);padding:34px clamp(20px,4vw,64px);overflow-y:auto}
+.adminpanel[hidden]{display:none}
+.adminpanel h3{margin:0 0 22px;font-family:var(--mono);font-size:12px;letter-spacing:.14em;color:var(--yellow-ink);text-transform:uppercase;opacity:.75}
+.admin-row{flex:1;display:flex;gap:24px;flex-wrap:wrap;align-items:stretch;max-width:1100px;margin:0 auto;width:100%}
+.admin-col{flex:1;min-width:300px;display:flex;flex-direction:column;background:var(--yellow-card);border:1px solid var(--yellow-line);border-radius:14px;padding:22px}
+.admin-col .col-title{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--yellow-ink);text-transform:uppercase;opacity:.65;margin-bottom:14px}
+.dropzone{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border:2px dashed var(--yellow-dash);border-radius:10px;padding:20px;text-align:center;font-family:var(--sans);font-size:14px;color:var(--yellow-ink);cursor:pointer;background:rgba(0,0,0,.05);min-height:180px}
+.dropzone:hover,.dropzone.over{border-color:var(--yellow-ink);background:rgba(0,0,0,.09)}
+.dropzone .big{font-size:30px;line-height:1}
+.dropzone input{display:none}
+.admin-note{justify-content:flex-start}
+.admin-note textarea{flex:1;width:100%;min-height:180px;padding:12px 14px;background:#FFFDF3;border:1px solid var(--yellow-line);border-radius:8px;color:#2B2205;font-family:var(--sans);font-size:14px;resize:vertical}
+.admin-note input.title{width:100%;padding:9px 12px;background:#FFFDF3;border:1px solid var(--yellow-line);border-radius:8px;color:#2B2205;font-family:var(--sans);font-size:13px;margin-bottom:10px}
+.admin-note button,.admin-list button.up{margin-top:10px;font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;color:#FFF6D6;background:var(--yellow-btn);border:0;border-radius:7px;padding:9px 16px;align-self:flex-start;cursor:pointer}
+.admin-note button:hover,.admin-list button.up:hover{opacity:.85}
+.admin-status{font-family:var(--mono);font-size:11px;color:var(--yellow-ink);opacity:.75;margin-top:10px;white-space:pre-wrap}
+.admin-status.ok{color:#1B6B3A;opacity:1}
+.admin-status.err{color:#A32424;opacity:1}
+.admin-list{display:none}
+.stopgen{font-family:var(--mono);font-size:10.5px;color:var(--amber);border:1px solid rgba(224,164,88,.4);border-radius:5px;padding:5px 10px;background:var(--amber-bg);cursor:pointer}
+.caret{display:inline-block;width:7px;height:14px;background:var(--green);vertical-align:-2px;margin-left:2px;animation:blink .9s steps(1) infinite}
+.ai-body p{margin:0 0 9px}
+.ai-body pre{font-family:var(--mono);font-size:12.5px;background:var(--block);border:1px solid var(--line);border-left:2px solid var(--green-dim);border-radius:0 5px 5px 0;padding:10px 13px;margin:10px 0;overflow-x:auto;white-space:pre-wrap;color:#8FE9BC}
+
+.stream{flex:1;overflow-y:auto;padding:24px 26px 10px;scroll-behavior:smooth}
+.wrap{max-width:900px;margin:0 auto}
+
+/* ---- turnos ---- */
+.turn{margin-bottom:30px;animation:rise .28s ease-out}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.meta{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+.who{font-family:var(--mono);font-size:10px;letter-spacing:.1em;padding:2px 6px;border-radius:3px}
+.who.qa{background:rgba(63,214,138,.14);color:var(--green)}
+.who.me{background:var(--blue);color:#9FC7EE}
+.time{font-family:var(--mono);font-size:11px;color:var(--dim-2)}
+.state{font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;margin-left:auto;color:var(--dim-2)}
+.state.warn{color:var(--amber)}
+
+.lead{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 18px;font-size:15px;color:var(--text-hi);max-width:640px}
+.block{background:var(--block);border:1px solid var(--line);border-radius:8px;padding:16px 18px;margin-top:9px;font-family:var(--mono);font-size:13px;line-height:1.75;color:var(--text);max-width:760px}
+.block>*:first-child{margin-top:0}
+.block>*:last-child{margin-bottom:0}
+.src{font-family:var(--mono);font-size:10.5px;color:var(--dim-2);margin-top:9px;letter-spacing:.03em}
+.src b{color:var(--dim);font-weight:400}
+
+.turn.me{display:flex;flex-direction:column;align-items:flex-end}
+.turn.me .meta{justify-content:flex-end}
+.bubble{background:var(--blue);border:1px solid var(--blue-hi);border-radius:8px;padding:12px 18px;color:#DCEBFA;font-family:var(--mono);font-size:14px;max-width:70%}
+
+/* ---- contenido dentro de .block ---- */
+.block h4{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--green-dim);margin:20px 0 9px;font-weight:600}
+.block p{margin:0 0 10px;font-family:var(--sans);font-size:14px;line-height:1.65;color:var(--text)}
+.block ul,.block ol{margin:0 0 12px;padding-left:22px}
+.block li{margin-bottom:6px}
+.block ul.arrow{list-style:none;padding-left:0}
+.block ul.arrow>li{padding-left:22px;position:relative}
+.block ul.arrow>li::before{content:"→";position:absolute;left:0;color:var(--green)}
+.block ol{counter-reset:s;list-style:none;padding-left:0}
+.block ol>li{padding-left:26px;position:relative;counter-increment:s}
+.block ol>li::before{content:counter(s,decimal-leading-zero) ".";position:absolute;left:0;color:var(--green-dim);font-size:12px}
+.block ol.chk,.block ul.chk{list-style:none;padding-left:0;counter-reset:s}
+.block .chk>li{padding-left:26px;position:relative}
+.block .chk>li::before{content:"[ ]";position:absolute;left:0;color:var(--dim-2);font-size:12px}
+code{font-family:var(--mono);font-size:12.5px;background:rgba(63,214,138,.08);border:1px solid rgba(63,214,138,.16);color:#8FE9BC;padding:1px 6px;border-radius:3px;white-space:nowrap}
+kbd{font-family:var(--mono);font-size:12px;background:#1B2833;border:1px solid #2C3D4C;border-bottom-width:2px;color:var(--text-hi);padding:1px 6px;border-radius:3px}
+.note{border-left:2px solid var(--amber);background:var(--amber-bg);padding:11px 14px;margin:13px 0;border-radius:0 5px 5px 0}
+.note b{color:var(--amber)}
+.hint{font-family:var(--mono);font-size:11px;color:var(--dim-2);line-height:1.6}
+a{color:#6FB3F0;text-decoration:none;border-bottom:1px solid rgba(111,179,240,.3);word-break:break-all}
+a:hover{border-bottom-color:#6FB3F0}
+table{width:100%;border-collapse:collapse;margin:10px 0 14px;font-size:12.5px}
+th{text-align:left;font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--dim-2);border-bottom:1px solid var(--line);padding:7px 10px 7px 0;font-weight:500}
+td{border-bottom:1px solid var(--line-soft);padding:7px 10px 7px 0;vertical-align:top;font-family:var(--sans);font-size:13.5px}
+td.m{font-family:var(--mono);font-size:12.5px;white-space:nowrap;color:#8FE9BC}
+.tbl-scroll{max-height:330px;overflow:auto;border:1px solid var(--line);border-radius:6px}
+.tbl-scroll table{margin:0}
+.tbl-scroll th{position:sticky;top:0;background:#101A22;padding:8px 10px;z-index:1}
+.tbl-scroll td{padding:7px 10px}
+.credbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:2px 0 12px}
+.reveal{font-family:var(--mono);font-size:11.5px;color:var(--dim);border:1px solid var(--line);border-radius:5px;padding:6px 12px;background:var(--block)}
+.reveal:hover{border-color:var(--green-dim);color:var(--green)}
+.reveal[aria-pressed="true"]{border-color:var(--amber);color:var(--amber);background:rgba(224,164,88,.07)}
+.cred{cursor:pointer;position:relative;display:inline-block}
+.cred:hover .pw-real,.cred:hover .pw-mask{color:var(--green)}
+.pw-mask{color:var(--dim-2);letter-spacing:.12em}
+.pw-real{color:#8FE9BC}
+.copied{position:absolute;left:calc(100% + 8px);top:0;font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;color:var(--green);text-transform:uppercase}
+.finder{margin:12px 0 4px}
+.finder input{width:100%;padding:9px 12px;background:#0B1219;border:1px solid var(--line);border-radius:5px;color:var(--text-hi);font-family:var(--mono);font-size:13px}
+.finder input:focus{outline:none;border-color:var(--green-dim)}
+.finder input::placeholder{color:var(--dim-2)}
+
+.followups{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px;max-width:760px}
+.fu{font-family:var(--mono);font-size:11.5px;color:var(--dim);border:1px solid var(--line);border-radius:5px;padding:6px 11px;background:var(--block)}
+.fu:hover{border-color:var(--green-dim);color:var(--green)}
+.fu::before{content:"› ";color:var(--green-dim)}
+
+/* ================= COMPOSER ================= */
+.composer{border-top:1px solid var(--line);padding:16px 26px 14px}
+.inputrow{max-width:900px;margin:0 auto;display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:4px 6px 4px 16px}
+.inputrow:focus-within{border-color:var(--green-dim)}
+.prompt{font-family:var(--mono);font-size:14px;color:var(--green)}
+#q{flex:1;background:none;border:0;padding:13px 0;color:var(--text-hi);font-family:var(--sans);font-size:14.5px}
+#q:focus{outline:none}
+#q::placeholder{color:var(--dim-2)}
+.send{width:42px;height:38px;border:1px solid var(--line);border-radius:6px;color:var(--dim);display:flex;align-items:center;justify-content:center}
+.send:hover{border-color:var(--green-dim);color:var(--green)}
+.chips{max-width:900px;margin:12px auto 0;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.chip{font-family:var(--mono);font-size:11.5px;color:var(--dim);border:1px solid var(--line);border-radius:5px;padding:6px 12px;background:var(--block)}
+.chip:hover{border-color:var(--green-dim);color:var(--green)}
+.chip[aria-current="true"]{border-color:var(--green-dim);color:var(--green);background:rgba(63,214,138,.07)}
+.chips .lbl{font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--dim-2);margin-right:2px}
+
+.help{position:fixed;right:22px;bottom:20px;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--dim);font-family:var(--mono);font-size:15px;display:flex;align-items:center;justify-content:center;z-index:20}
+.help:hover{border-color:var(--green-dim);color:var(--green)}
+
+/* scrollbars */
+*::-webkit-scrollbar{width:9px;height:9px}
+*::-webkit-scrollbar-track{background:transparent}
+*::-webkit-scrollbar-thumb{background:#1E2A36;border-radius:5px}
+*::-webkit-scrollbar-thumb:hover{background:#2A3946}
+
+@media (max-width:900px){
+  .app{grid-template-columns:1fr}
+  .side{position:fixed;inset:0 auto 0 0;width:280px;z-index:30;transform:translateX(-100%);transition:transform .22s ease}
+  .side.open{transform:none}
+  .scrim{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:29;display:none}
+  .scrim.on{display:block}
+  .stream,.composer,.bar{padding-left:14px;padding-right:14px}
+  .bubble{max-width:85%}
+  .bar .count{display:none}
+  .help{bottom:auto;top:14px;right:14px;width:32px;height:32px;font-size:13px}
+}
+@media (min-width:901px){.burger{display:none}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div class="scrim" id="scrim"></div>
+<div class="app">
+
+  <aside class="side" id="side">
+    <div class="side-head">
+      <div class="logo"><span class="pulse"></span>REPOSITORIO QA</div>
+      <div class="ver">v0.1 — MVP · QA INTERNAL</div>
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div class="side-foot">EQUIPO QA · SOPORTE INTERNO</div>
+  </aside>
+
+  <div class="main">
+    <div class="bar">
+      <button class="burger" id="burger" aria-label="Abrir módulos">☰</button>
+      <div class="where" id="where"><span class="k">00_</span> Inicio</div>
+      <div class="aigroup">
+        <span class="aistate" id="aistate" data-s="iniciando" title="Estado del modelo local">
+          <span class="dot"></span><span id="aistatetxt">IA LOCAL · INICIANDO</span>
+        </span>
+        <button class="aitoggle" id="aitoggle" aria-pressed="true"
+                title="Cuando está activa, la IA local responde toda consulta escrita usando como contexto toda la documentación de la página">IA ON</button>
+        <div class="modeswitch" role="group" aria-label="Modo">
+          <button class="modebtn" id="modeChat" aria-pressed="true">CHAT</button>
+          <button class="modebtn warn" id="modeAdmin" aria-pressed="false">ADMINISTRADOR</button>
+        </div>
+        <div class="count" id="count">0 mensajes</div>
+      </div>
+    </div>
+
+    <div class="adminpanel" id="adminPanel" hidden>
+      <h3>Modo administrador — actualizar la base de conocimiento</h3>
+      <div class="admin-row">
+        <div class="admin-col">
+          <div class="col-title">Subir documento</div>
+          <label class="dropzone" id="dropzone" for="adminFile">
+            <span class="big">📎</span>
+            Arrastra un archivo aquí o haz clic para elegirlo<br>
+            <span style="opacity:.7">foto, pdf, docx, xlsx, pptx, txt o zip</span>
+            <input type="file" id="adminFile"
+                   accept=".pdf,.docx,.xlsx,.xlsm,.pptx,.txt,.csv,.zip,.png,.jpg,.jpeg,.bmp,.tif,.tiff,.webp">
+          </label>
+          <div class="admin-status" id="uploadStatus"></div>
+        </div>
+        <div class="admin-col admin-note">
+          <div class="col-title">Escribir directamente</div>
+          <input class="title" id="noteTitle" placeholder="Título de la nota (opcional)">
+          <textarea id="noteText" placeholder="Escribe aquí la información a agregar/actualizar..."></textarea>
+          <button class="up" id="noteSave">Guardar como conocimiento</button>
+          <div class="admin-status" id="noteStatus"></div>
+        </div>
+      </div>
+      <div class="admin-list" id="adminList"></div>
+    </div>
+
+    <div class="stream" id="stream"><div class="wrap" id="wrap"></div></div>
+
+    <div class="composer">
+      <div class="inputrow">
+        <span class="prompt">&gt;_</span>
+        <input id="q" autocomplete="off" placeholder="Escribe tu consulta o presiona una opción del menú...">
+        <button class="send" id="send" aria-label="Enviar">→</button>
+      </div>
+      <div class="chips" id="chips"><span class="lbl">ACCESO RÁPIDO</span></div>
+    </div>
+  </div>
+</div>
+<button class="help" id="help" aria-label="Ayuda">?</button>
+
+<script id="dataset" type="application/json">{"links": [{"n": "ClearQuest", "u": "https://srv1papra5.bn.com.pe/cqweb/", "user": "", "pw": ""}, {"n": "Págalo.pe", "u": "https://calidad4.bn.com.pe/Multipagos/", "user": "", "pw": ""}, {"n": "Págalo Ambiente de Desarrollo", "u": "https://desarrollo.bn.com.pe/Multipagos_Nuevo/home", "user": "", "pw": ""}, {"n": "Monitor Multipagos", "u": "https://10.7.106.55:9443/MonitorMultipagos/consulta/listaOperacion.action#", "user": "krvc", "pw": "krvc.001"}, {"n": "HUB", "u": "http://10.7.106.36:9080/BancoDeLaNacion/jsps/login.jsp", "user": "krvc", "pw": "krvc.001"}, {"n": "Carpeta compartida - CERTI", "u": "\\\\10.7.10.130\\CalidadSoluciones\\", "user": "", "pw": ""}, {"n": "Carpeta compartida", "u": "\\\\10.7.12.249\\Mantenimientos\\", "user": "", "pw": ""}, {"n": "WebSphere Págalo Multipagos", "u": "https://10.7.106.55:9043/ibm/console/logon.jsp", "user": "jguevarac", "pw": "jguevarac2024."}, {"n": "WebSphere Banca Móvil", "u": "https://10.7.106.96:9043/ibm/console/logon.jsp", "user": "emunozr", "pw": "emunozr2023$."}, {"n": "WebSphere Apps", "u": "https://10.7.106.41:9043/ibm/console/logon.jsp", "user": "jguevarac", "pw": "Nohe@8765"}, {"n": "WebSphere BDUC", "u": "https://10.7.106.82:9045/ibm/console/login.do", "user": "emunozr", "pw": "emunozr2023$."}, {"n": "WebSphere BDUC (alterno)", "u": "https://10.7.106.216:9043/ibm/console/logon.jsp", "user": "", "pw": ""}, {"n": "BDUC 1", "u": "https://srv1cihai1.bn.com.pe/bduc/", "user": "krvc", "pw": "krvc.001"}, {"n": "BDUC 2", "u": "http://10.7.106.84/bduc/", "user": "krvc", "pw": "krvc.001"}, {"n": "BDUC 1", "u": "http://10.7.106.86/bduc/", "user": "krvc", "pw": "krvc.001"}, {"n": "BDUC 2", "u": "http://10.7.106.90/bduc/", "user": "krvc", "pw": "krvc.001"}, {"n": "RedHat OpenShift", "u": "https://console-openshift-console.apps.ocpc.bn.com.pe/auth/", "user": "", "pw": ""}, {"n": "Multired Virtual (MV)", "u": "https://calidadinternet.bn.com.pe/BNWeb/login.do", "user": "", "pw": ""}, {"n": "Módulo Web Banca Móvil", "u": "http://10.7.106.97:9080/MWBM/index.jsf", "user": "", "pw": ""}, {"n": "Facial Identia (TOC)", "u": "https://facialqa.identia.pe/", "user": "", "pw": ""}, {"n": "POEM - PORTAL DEL EMPLEADO / PERSONAL EN LINEA", "u": "http://10.7.10.32/POEM/frmLogin.aspx", "user": "", "pw": ""}, {"n": "COMP (Oracle 12c)", "u": "https://srv1cihai1.bn.com.pe/comp_12/", "user": "krvc", "pw": "krvc.001"}, {"n": "Sistema de Administración de Tarjetas", "u": "http://10.7.106.84/AdmTarjetas/index.jsp", "user": "krvc", "pw": "krvc.001"}, {"n": "SARAWEB - links para el inicio de dia", "u": "http://calidad01p:8080/sarawebbranchserver/admin/inicio.html", "user": "1110013", "pw": "a11111"}, {"n": "SARAWEB - links para el inicio de dia (alterno)", "u": "http://calidad02b:8080/sarawebbranchserver/BeginServlet", "user": "1110013", "pw": "a11111"}, {"n": "SARAWEB - links para el inicio de dia (alterno)", "u": "http://certifica01p:8080/sarawebbranchserver/BeginServlet", "user": "1110013", "pw": "a11111"}, {"n": "SARAWEB - links para el inicio de dia (alterno)", "u": "http://certifica02b:8080/sarawebbranchserver/BeginServlet", "user": "1110013", "pw": "a11111"}, {"n": "IVANTI-Herramienta de Gestión de Servicios TI", "u": "https://portal.bn.com.pe/HEAT/?returnUrl=%2FHEAT%2FModules%2FSelfService%2F#serviceCatalog", "user": "", "pw": ""}, {"n": "PORTAL INTERNO BN", "u": "http://srv1pcowp4.bn.com.pe/aplicativos-core.html", "user": "", "pw": ""}, {"n": "Gente BN - Portal informativo para trabajadores", "u": "https://gente.bn.com.pe/SitePages/IPERC11.aspx", "user": "", "pw": ""}], "trx": [{"b": "AHORROS", "t": "0270", "d": "Consulta Reversos Multired"}, {"b": "AHORROS", "t": "0271", "d": "Consulta Retiros Multired"}, {"b": "AHORROS", "t": "1100", "d": "Consulta de Saldos de ahorros"}, {"b": "AHORROS", "t": "1110", "d": "Consulta Ultimo movimiento"}, {"b": "AHORROS", "t": "1113", "d": "Actualizacion Direccion Programa Pension 65"}, {"b": "AHORROS", "t": "1115", "d": "Actualizacion Datos Cliente BN"}, {"b": "AHORROS", "t": "1119", "d": "Elección de Medio de envio de Estado de cuenta"}, {"b": "AHORROS", "t": "1120", "d": "Consulta movimientos del día"}, {"b": "AHORROS", "t": "1123", "d": "Registro de contrato Op. Pasivas"}, {"b": "AHORROS", "t": "1124", "d": "Registro de atributos de tarjeta"}, {"b": "AHORROS", "t": "1125", "d": "Consulta codigo CCI Ahorros MN/ME"}, {"b": "AHORROS", "t": "1160", "d": "Consulta de estado de cta MN"}, {"b": "AHORROS", "t": "1170", "d": "Consulta modif. Situacion CTA ahorros"}, {"b": "AHORROS", "t": "1330", "d": "Vigilancia cuenta ahorros  MN y ME"}, {"b": "AHORROS", "t": "1340", "d": "Levantar vigilancia CTA ahorros"}, {"b": "AHORROS", "t": "1350", "d": "Activar tarjeta FONAHPU"}, {"b": "AHORROS", "t": "1360", "d": "Consulta alfabetica tarj. FONAHPU"}, {"b": "AHORROS", "t": "1370", "d": "Apertura Ctas turismo MN"}, {"b": "AHORROS", "t": "1456", "d": "Cambio de clave tarjeta multired"}, {"b": "AHORROS", "t": "1470", "d": "Cancelacion cta ahorros"}, {"b": "AHORROS", "t": "1490", "d": "Extorno especial ahorros"}, {"b": "AHORROS", "t": "1495", "d": "Extorno espec. Trans. Cta turismo"}, {"b": "AHORROS", "t": "1500", "d": "Impresión inf. Apertura ahorros"}, {"b": "AHORROS", "t": "1505", "d": "Consulta ctas por cliente"}, {"b": "AHORROS", "t": "1510", "d": "Emision tarjeta multired"}, {"b": "AHORROS", "t": "1515", "d": "Reimpresion refrendo multired"}, {"b": "AHORROS", "t": "1520", "d": "Reposicion tarjeta multired"}, {"b": "AHORROS", "t": "1540", "d": "Bloqueo de tarjeta"}, {"b": "AHORROS", "t": "1542", "d": "Registro de poder"}, {"b": "AHORROS", "t": "1543", "d": "Anulacion de poder"}, {"b": "AHORROS", "t": "1544", "d": "Revocatoria de poder"}, {"b": "AHORROS", "t": "1545", "d": "Registro de vigencia de poder publico"}, {"b": "AHORROS", "t": "1546", "d": "Reimpresion de constancia de registro"}, {"b": "AHORROS", "t": "1547", "d": "Cambio de clave"}, {"b": "AHORROS", "t": "1549", "d": "Ahorros programados (Progr. Sociales)"}, {"b": "AHORROS", "t": "1550", "d": "Reimpresion inf. Apertura ahorros"}, {"b": "AHORROS", "t": "1551", "d": "Impresión autorizacion datos programa Juntos"}, {"b": "AHORROS", "t": "1560", "d": "Emision tarjeta multired adicional"}, {"b": "AHORROS", "t": "1570", "d": "Reposicion tarjeta multired adicional"}, {"b": "AHORROS", "t": "1600", "d": "Retiro de Ahorros -Clave y/o Huella", "rel": "MAESTRO DE AHORROS", "open": "BDUC", "host": "DPAH", "imp": "ALTO", "req": "TARJETA ,DNI, HUELLA DIGITAL (BIOMÉTRICO)"}, {"b": "AHORROS", "t": "1630", "d": "Consulta y Retiro C/CHQ.GER.PinPad", "rel": "MAESTRO DE AHORROS", "open": "BDUC", "host": "DPAH", "imp": "ALTO", "req": "CUENTA AHORROS"}, {"b": "AHORROS", "t": "1650", "d": "Ahorros regularizacion"}, {"b": "AHORROS", "t": "1670", "d": "Nota de Cargo ahorros MN/ME"}, {"b": "AHORROS", "t": "1671", "d": "Nota de Cargo ahorros retenciones MN/ME"}, {"b": "AHORROS", "t": "1700", "d": "RETIRO AHORROS MN Y ME", "rel": "MAESTRO DE AHORROS", "open": "BDUC", "host": "DPAH", "imp": "ALTO", "req": "CUENTA AHORROS"}, {"b": "AHORROS", "t": "1701", "d": "RETIRO C/CARTA PODER MN (UNICA VEZ)", "rel": "MAESTRO DE AHORROS", "open": "BDUC", "host": "DPAH", "imp": "ALTO", "req": "CUENTA AHORROS"}, {"b": "AHORROS", "t": "1703", "d": "CONSULTA Y RETIRO BIOMETRICO", "rel": "MAESTRO DE AHORROS", "open": "BDUC", "host": "DPAH", "imp": "ALTO", "req": "CUENTA AHORROS"}, {"b": "AHORROS", "t": "1710", "d": "RETIRO MN CON PODER", "rel": "1542 REGISTRO DE PODER", "open": "BDUC", "host": "DPAH", "ext": "RENIEC,MINISTERIO RELACIONES EXTERIORES(POSTILLA)", "imp": "ALTO", "req": "CODIGO DE EMPLEADO Y CTA DE AHORROS"}, {"b": "AHORROS", "t": "1720", "d": "Consulta y Retiro especial UOB"}, {"b": "AHORROS", "t": "1770", "d": "Nota abono ahorros MN/ME"}, {"b": "AHORROS", "t": "1771", "d": "Nota de abono CTS mismo cliente MN/ME"}, {"b": "AHORROS", "t": "1800", "d": "Depósito en cta de ahorros"}, {"b": "AHORROS", "t": "1810", "d": "Depósito en cta alimentistas"}, {"b": "AHORROS", "t": "1923", "d": "Consulta ult. Movimientos"}, {"b": "AHORROS", "t": "1924", "d": "Estado de cuenta"}, {"b": "AHORROS", "t": "2800", "d": "Afiliacion seguro tarj. Débito"}, {"b": "AHORROS", "t": "2801", "d": "Desafiliacion Seguro tarj. Débito"}, {"b": "AHORROS", "t": "2810", "d": "Afiliacion de seguros"}, {"b": "AHORROS", "t": "2811", "d": "Desafiliacion de seguros"}, {"b": "AHORROS", "t": "3302", "d": "captura de datos"}, {"b": "AHORROS", "t": "3370", "d": "Transf. Cuentas turismo"}, {"b": "AHORROS", "t": "3930", "d": "Pago bonificacion FONAHPU"}, {"b": "AHORROS", "t": "3931", "d": "Pago FONAHPU por poder/Diferido"}, {"b": "AHORROS", "t": "4415", "d": "Consulta/configuracion de PIN PAD en estacion"}, {"b": "AHORROS", "t": "4416", "d": "Consulta/configuracion de biometrico en estacion"}, {"b": "AHORROS", "t": "4417", "d": "cosulta/configuracion de impresora en estacion"}, {"b": "AHORROS", "t": "4420", "d": "Afiliacion/Desafiliacion a multired celular"}, {"b": "AHORROS", "t": "4421", "d": "Consulta de alias de multired celular"}, {"b": "AHORROS", "t": "4425", "d": "Afiliacion operaciones Frecuentes Multired Celular"}, {"b": "AHORROS", "t": "4426", "d": "Desafiliacion Operac. Frecuentes multired celular"}, {"b": "AHORROS", "t": "4450", "d": "Afiliacion / Reafiliacion Clave Internet"}, {"b": "AHORROS", "t": "4452", "d": "Reimpresion Afiliacion/reafiliacion clave intern"}, {"b": "AHORROS", "t": "4453", "d": "Afil/Desafil/modif de debito automatico"}, {"b": "AHORROS", "t": "4456", "d": "Cambio clave tarjeta Visa"}, {"b": "AHORROS", "t": "4460", "d": "Afiliacion / Desafiliacion de cuentas"}, {"b": "AHORROS", "t": "4500", "d": "Impresión Inf. Apertura Ahorros Visa"}, {"b": "AHORROS", "t": "4505", "d": "Vinculacion tocken"}, {"b": "AHORROS", "t": "4506", "d": "Reposicion Tokecn"}, {"b": "AHORROS", "t": "4507", "d": "Bloqueo TDC/TOKEN"}, {"b": "AHORROS", "t": "4508", "d": "Desvinculacion TDC"}, {"b": "AHORROS", "t": "4510", "d": "Emision tarjeta visa"}, {"b": "AHORROS", "t": "4515", "d": "Modificacion de limite maximo multired virtual"}, {"b": "AHORROS", "t": "4520", "d": "Reposicion Tarjeta visa"}, {"b": "AHORROS", "t": "4530", "d": "Sustitucion tarjeta multired por tarjeta visa"}, {"b": "AHORROS", "t": "4540", "d": "Bloqueo de tarjeta visa"}, {"b": "AHORROS", "t": "4544", "d": "impresión constancia de bloqueo"}, {"b": "AHORROS", "t": "4550", "d": "Migracion Tarjeta Banda Magnetica por chip"}, {"b": "AHORROS", "t": "4554", "d": "Reposicion tarjeta VISA - titular validacion huella"}, {"b": "AHORROS", "t": "4556", "d": "Emisioni tarjeta VISA - titular validacion huella"}, {"b": "AHORROS", "t": "4570", "d": "reposicion Tarjeta visa adicional"}, {"b": "AHORROS", "t": "4580", "d": "Cambio T. naranja por T. visa"}, {"b": "AHORROS", "t": "8370", "d": "Apertura nuevas cuentas ahorros ME"}, {"b": "AHORROS", "t": "8710", "d": "Consulta y Retiro Especial M.E.", "rel": "MAESTRO DE AHORROS", "open": "BDUC", "host": "DPAH", "imp": "ALTO", "req": "CUENTA AHORROS"}, {"b": "CTA CORRIENTE", "t": "0100", "d": "CONSULTA Y SALDO DE CTAS CTES MN Y ME", "rel": "MAESTRO DE CTAS CTES", "open": "BDUC", "host": "SICT", "imp": "ALTO", "req": "NUMERO DE CTA CTE"}, {"b": "CTA CORRIENTE", "t": "0110", "d": "CONSULTA DE ULTIMA TRAN MN/ME", "rel": "MAESTRO DE CTAS CTES", "open": "BDUC", "host": "SICT", "imp": "ALTO", "req": "NUMERO DE OPERACIÓN"}, {"b": "CTA CORRIENTE", "t": "0115", "d": "CONSULTA DEVOLUCION/DEPOSITO AL TESORO", "rel": "MAESTRO DE CTAS CTES", "open": "BDUC", "host": "SICT", "imp": "ALTO", "req": "T6 (número formato orden de pago) INGRESADA AL SISTEMA"}, {"b": "CTA CORRIENTE", "t": "0120", "d": "CONSULTA DE MOVIMIENTOS CTA CTE MN/ME", "rel": "MAESTRO DE CTAS CTES", "open": "BDUC", "host": "SICT", "imp": "ALTO", "req": "NUMERO DE CTA CTE"}, {"b": "CTA CORRIENTE", "t": "0124", "d": "CONSULTA DE ULTIMOS MOVIMIENTOS CTAS CTES", "rel": "MAESTRO DE CTAS CTES", "open": "BDUC", "host": "SICT", "imp": "ALTO", "req": "NUMERO DE CTA CTE"}, {"b": "CTA CORRIENTE", "t": "0125", "d": "CONSULTA CODIGO CCI CTAS CTES MN/ME", "rel": "MAESTRO DE CTAS CTES", "open": "BDUC", "host": "SICT", "imp": "ALTO", "req": "NUMERO DE CUENTA"}, {"b": "CTA CORRIENTE", "t": "0140", "d": "CONSULTA CHEQUES SUSPENDIDOS POR CTA MN/ME", "rel": "MAESTRO DE CTAS CTES", "open": "BDUC", "host": "SICT", "imp": "ALTO", "req": "NUMERO DE CTA CTE"}, {"b": "CTA CORRIENTE", "t": "0160", "d": "CONSULTA DE SITUACION CTAS CTES MN/ME", "rel": "MAESTRO DE CTAS CTES", "open": "BDUC", "host": "SICT", "imp": "ALTO", "req": "NUMERO DE CTA CTE"}, {"b": "CTA CORRIENTE", "t": "0330", "d": "CAMBIO DE SITUACION CTAS MN/ME", "rel": "MAESTRO DE CTAS CTES", "open": "BDUC", "host": "SICT", "imp": "ALTO", "req": "NUMERO DE CTA CTE"}, {"b": "CTA CORRIENTE", "t": "0340", "d": "REVERTIR CAMBIO DE SITUACION CTA MN/ME", "rel": "MAESTRO DE CTAS CTES", "open": "BDUC", "host": "SICT", "imp": "ALTO", "req": "NUMERO DE CTA CTE"}, {"b": "CTA CORRIENTE", "t": "0350", "d": "IMPRE/REIMPR. CONTRATO CTAS CTES.", "rel": "MAESTRO DE CTAS CTES", "open": "BDUC", "host": "SICT", "imp": "ALTO", "req": "NUMERO DE CTA CTE"}, {"b": "CTA CORRIENTE", "t": "0440", "d": "SUSPENSION O REVOCACION DE PAGO DE CHEQUES MN/ME", "rel": "MAESTRO DE CTAS CTES", "open": "BDUC", "host": "SICT", "imp": "ALTO", "req": "NUMERO DE CTA CTE Y NUMERO DE CHEQUE"}, {"b": "CTA CORRIENTE", "t": "0450", "d": "LEVANT. DE SUSPENC.O REVOCA.DE PAGO DE CHEQUES MN/ME", "rel": "MAESTRO DE CTAS CTES", "open": "BDUC", "host": "SICT", "imp": "ALTO", "req": "NUMERO DE CTA CTE Y NUMERO DE CHEQUE"}, {"b": "CTA CORRIENTE", "t": "0490", "d": "EXTORNO ESPECIAL CTA CTE MN/ME", "rel": "MAESTRO DE CTAS CTES", "open": "BDUC", "host": "SICT", "imp": "ALTO", "req": "TRANSACCION A EXTORNAR/NUM CTA/"}, {"b": "CTA CORRIENTE", "t": "0509", "d": "PREVENCION DE LAVADO DE DINERO", "rel": "MAESTRO DE CTAS CTES", "open": "BDUC", "host": "SICT", "imp": "ALTO", "req": "NUMERO DE SECUENCIA"}, {"b": "CTA CORRIENTE", "t": "0511", "d": "CONSULTA DE CHEQUE/ NOTA CARGO", "rel": "MAESTRO DE CTAS CTES", "open": "BDUC", "host": "SICT", "imp": "ALTO", "req": "NUMERO DE CTA CTE"}, {"b": "CTA CORRIENTE", "t": "0521", "d": "CONSULTA DE SITUACION CHEQUE NOTA  CARGO", "rel": "MAESTRO DE CTAS CTES", "open": "BDUC", "host": "SICT", "imp": "ALTO", "req": "NUMERO DE CTA CTE"}, {"b": "CTA CORRIENTE", "t": "0531", "d": "PAGO DE CHEQUE /NOTA DE CARGO", "rel": "MAESTRO DE CTAS CTES", "open": "BDUC", "host": "SICT", "imp": "ALTO", "req": "NUMERO DE CTA CTE"}, {"b": "CTA CORRIENTE", "t": "0560", "d": "RETENCION DE FONDOS MN", "rel": "MAESTRO DE CTAS CTES", "open": "BDUC", "host": "SICT", "imp": "ALTO", "req": "NUMERO DE CTA CTE"}, {"b": "CTA CORRIENTE", "t": "0570", "d": "LEVANTAMIENTO DE RETENCION DE FONDOS MN", "rel": "MAESTRO DE CTAS CTES", "open": "BDUC", "host": "SICT", "imp": "ALTO", "req": "NUMERO DE CTA CTE"}, {"b": "CTA CORRIENTE", "t": "0600", "d": "PAGO DE CHEQUES CON FIRMA MN/ME", "rel": "MAESTRO DE CTAS CTES", "open": "BDUC", "host": "SICT", "imp": "ALTO", "req": "NUMERO DE CTA CTE,NUMERO DE CHEQUE"}, {"b": "CTA CORRIENTE", "t": "0620", "d": "CHEQUE CARGADO MN./ME", "rel": "MAESTRO DE CTAS CTES", "open": "BDUC", "host": "SICT", "imp": "ALTO", "req": "NUMERO DE CTA CTE,NUMERO DE CHEQUE"}, {"b": "CTA CORRIENTE", "t": "0630", "d": "PAGO DE CHEQUES CON BASE DE DATOS", "rel": "MAESTRO DE CTAS CTES", "open": "BDUC", "host": "SICT", "imp": "ALTO", "req": "NUMERO DE CTA CTE,NUMERO DE CHEQUE"}, {"b": "CTA CORRIENTE", "t": "0640", "d": "LIBERACION DE FONDOS CUENTAS DETRACCIONES", "rel": "MAESTRO DE CTAS CTES", "open": "BDUC", "host": "SICT", "imp": "ALTO", "req": "NUMERO DE CTA ,NUMERO DE RESOLUCION"}, {"b": "CTA CORRIENTE", "t": "0641", "d": "PAGO DE CHEQUE ONP CON BASE DE DATOS", "rel": "MAESTRO DE CTAS CTES", "open": "BDUC", "host": "SICT", "imp": "ALTO", "req": "CÓDIGO DE PENSIONISTA"}, {"b": "CTA CORRIENTE", "t": "0650", "d": "CERTIFICACION DE CHEQUE MN/ME", "rel": "MAESTRO DE CTAS CTES", "open": "BDUC", "host": "SICT", "imp": "ALTO", "req": "CTA CTE ,NUMERO DE CHEQUE"}, {"b": "CTA CORRIENTE", "t": "0651", "d": "ANULACION DE CHEQUE CERTIFICADO MN/ME", "rel": "MAESTRO DE CTAS CTES", "open": "BDUC", "host": "SICT", "imp": "ALTO", "req": "NUMERO DE CTA CTE,NUMERO DE CHEQUE"}, {"b": "CTA CORRIENTE", "t": "0655", "d": "CHEQUE CERTIFICADO CARGADO MN/ME", "rel": "MAESTRO DE CTAS CTES", "open": "BDUC", "host": "SICT", "imp": "ALTO", "req": "NUMERO DE CTA CTE,NUMERO DE CHEQUE"}, {"b": "CTA CORRIENTE", "t": "0660", "d": "PAGO DE CHEQUES SUB CTAS TESORO", "rel": "MAESTRO DE CTAS CTES", "open": "BDUC", "host": "SICT", "imp": "ALTO", "req": "NUMERO DE CTA CTE,NUMERO DE CHEQUE"}, {"b": "CTA CORRIENTE", "t": "0670", "d": "NOTA DE CARGO MN/ME", "rel": "MAESTRO DE CTAS CTES", "open": "BDUC", "host": "SICT", "imp": "ALTO", "req": "NUMERO DE CUENTA"}, {"b": "CTA CORRIENTE", "t": "0675", "d": "CUENTAS CORRIENTES - REGULARIZACION", "rel": "MAESTRO DE CTAS CTES", "open": "BDUC", "host": "SICT", "imp": "ALTO", "req": "ALTERNATIVA ( NOTA DE CARGO,ABONO,DEVOLUCION ITF) ,NUMERO DE CUENTA"}, {"b": "CTA CORRIENTE", "t": "0680", "d": "PAGO DE CHEQUES SIN FIRMA MN/ME", "rel": "MAESTRO DE CTAS CTES", "open": "BDUC", "host": "SICT", "imp": "ALTO", "req": "NUMERO DE CTA CTE,NUMERO DE CHEQUE"}, {"b": "CTA CORRIENTE", "t": "0681", "d": "PAGO DE CHEQUE CERTIFICADO MN/ME", "rel": "MAESTRO DE CTAS CTES", "open": "BDUC", "host": "SICT", "imp": "ALTO", "req": "NUMERO DE CTA CTE,NUMERO DE CHEQUE"}, {"b": "CTA CORRIENTE", "t": "0690", "d": "NOTA DE CARGO VARIOS CONCEPTOS", "rel": "MAESTRO DE CTAS CTES", "open": "BDUC", "host": "SICT", "imp": "ALTO", "req": "NUMERO DE CTA CTE"}, {"b": "CTA CORRIENTE", "t": "0700", "d": "DEPOSITOS EN CTA CTE MN/ME", "rel": "MAESTRO DE CTAS CTES", "open": "BDUC", "host": "SICT", "imp": "ALTO", "req": "NUMERO DE CTA CTE"}, {"b": "CTA CORRIENTE", "t": "0770", "d": "NOTA DE ABONO"}, {"b": "CTA CORRIENTE", "t": "0780", "d": "DEPOSITO/DEVOLUCION TESORO MN OTRAS ENTIDADES"}, {"b": "CTA CORRIENTE", "t": "0790", "d": "NOTA DE ABONO VARIOS"}, {"b": "CTA CORRIENTE", "t": "0800", "d": "DEPOSITO ESPECIAL EN CUENTA CORRIENTE MN/EFECT. O CH", "rel": "MAESTRO DE CTAS CTES", "open": "BDUC", "host": "SICT", "imp": "ALTO", "req": "NUMERO DE CTA,TIPO DE COMPROBANTE (FACTURA,BOLETA DE VENTA,GUIA DE REMISION)"}, {"b": "CTA CORRIENTE", "t": "0860", "d": "ORDEN DE PAGO SUB CTACTE DEL TESORO MN/ME", "rel": "MAESTRO DE CTAS CTES", "open": "BDUC", "host": "SICT", "imp": "ALTO", "req": "NUMERO DE CTA CTE"}, {"b": "CTA CORRIENTE", "t": "0924", "d": "ESTADOS DE CUENTA MN", "rel": "MAESTRO DE CTAS CTES", "open": "BDUC", "host": "SICT", "imp": "ALTO", "req": "NUMERO DE CTA CTE"}, {"b": "CTA CORRIENTE", "t": "0950", "d": "ORDEN DE PAGO ALGODONEROS (EXTORNO)", "rel": "MAESTRO DE CTAS CTES", "open": "BDUC", "host": "SICT", "imp": "ALTO", "req": "NUMERO DE ORDEN"}, {"b": "CTA CORRIENTE", "t": "0955", "d": "CONSULTA /PAGO ALGODONEROS", "rel": "MAESTRO DE CTAS CTES", "open": "BDUC", "host": "SICT", "imp": "ALTO", "req": "TIPO DE DOCUMENTO (DNI O RUC)"}, {"b": "CTA CORRIENTE", "t": "0970", "d": "DEVOLUCION/DEPOSITO TESORO MN SIAF", "rel": "MAESTRO DE CTAS CTES", "open": "BDUC", "host": "SICT", "imp": "ALTO", "req": "NUMERO DE CUENTA EJECUTORA ,NUMERO DE T6"}, {"b": "CTA CORRIENTE", "t": "1380", "d": "REGISTRO CHEQUES SIN FONDO MN/ME", "rel": "MAESTRO DE CTAS CTES", "open": "BDUC", "host": "SICT", "imp": "ALTO", "req": "NUMERO DE CTA CTE,NUMERO DE CHEQUE"}, {"b": "CTA CORRIENTE", "t": "2700", "d": "CANJE SALIDA-REPORTE CH.O/B", "rel": "MAESTRO DE CTAS CTES", "open": "BDUC", "host": "SICT", "imp": "ALTO", "req": "DIGITAR LA TRANSACCION 2700 Y PAPEL A LA IMPRESORA"}, {"b": "CTA CORRIENTE", "t": "2710", "d": "CANJE SALIDA- INGRESO CH. O/B", "rel": "MAESTRO DE CTAS CTES", "open": "BDUC", "host": "SICT", "imp": "ALTO", "req": "PASAR CHEQUE POR LECTORA"}, {"b": "CTA CORRIENTE", "t": "4535", "d": "VINCULACION CTA CTE A T. VISA", "rel": "MAESTRO DE CTAS CTES", "open": "BDUC", "host": "SICT", "imp": "ALTO", "req": "NUMERO DE CTA CTE"}, {"b": "RECAUDACION DE TASAS Y TRIBUTOS", "t": "3990", "d": "PAGOS POR COBRANZA COACTIVA EFECTIVO Y CHEQUE MN", "rel": "BASE DE DATOS RECAUDACION", "open": "BDUC", "host": "SU00", "imp": "ALTO", "req": "NUMERO DE LIQUIDACION"}, {"b": "RECAUDACION DE TASAS Y TRIBUTOS", "t": "9120", "d": "PAGO DE TASA Y SERVICIOS", "rel": "BASE DE DATOS RECAUDACION", "open": "BDUC", "host": "SU00", "ext": "INDECOPI", "imp": "ALTO", "req": "MODALIDAD( PROFORMA,TASAY SERVICIO)"}, {"b": "RECAUDACION DE TASAS Y TRIBUTOS", "t": "9130", "d": "CONS/PAGO RECAUD. MUNICIPALIDAD", "rel": "BASE DE DATOS RECAUDACION", "open": "BDUC", "host": "SU00", "ext": "MUNICIPALIDAD", "imp": "ALTO", "req": "ALTERNATIVA(MUNICIPALIDAD A PAGAR) Y NUMERO DE DOCUMENTO"}, {"b": "RECAUDACION DE TASAS Y TRIBUTOS", "t": "9132", "d": "CONS. ALUMNOS TASAS EDUCATIVAS", "rel": "BASE DE DATOS RECAUDACION", "open": "BDUC", "host": "SU00", "imp": "ALTO", "req": "NOMBRE COMPLETO DEL ALUMNO"}, {"b": "RECAUDACION DE TASAS Y TRIBUTOS", "t": "9135", "d": "PAGO DE TASA EDUCATIVAS CON EFECTIVO Y CHEQUE MN", "rel": "BASE DE DATOS RECAUDACION", "open": "BDUC", "host": "SU00", "imp": "ALTO", "req": "CODIGO DEL ALUMNO O DNI"}, {"b": "RECAUDACION DE TASAS Y TRIBUTOS", "t": "9170", "d": "CONS./PAGO SERVICIOS POSTALES Y TELECOMUNICACIONES", "rel": "BASE DE DATOS RECAUDACION", "open": "BDUC", "host": "SU00", "imp": "ALTO", "req": "NUMERO DE RUC"}, {"b": "RECAUDACION DE TASAS Y TRIBUTOS", "t": "9175", "d": "CONS./PAGO SERVICIOS POSTALES Y TELECOMUNICACIONES-MTC (EXT)", "rel": "BASE DE DATOS RECAUDACION", "open": "BDUC", "host": "SU00", "imp": "ALTO", "req": "NUMERO DE RUC"}, {"b": "RECAUDACION DE TASAS Y TRIBUTOS", "t": "9180", "d": "PAGO TUPA MARINA DE GUERRA", "rel": "BASE DE DATOS RECAUDACION", "open": "BDUC", "host": "SU00", "imp": "ALTO", "req": "NUMERO DE BOLETA DE RECAUDACION"}, {"b": "RECAUDACION DE TASAS Y TRIBUTOS", "t": "9321", "d": "PAGO DE TRIBUTOS ETV"}, {"b": "RECAUDACION DE TASAS Y TRIBUTOS", "t": "9601", "d": "TOTALES DE TRIBUTO POR CAJERO"}, {"b": "RECAUDACION DE TASAS Y TRIBUTOS", "t": "9602", "d": "TOTALES DE TRIBUTO POR OFICINA"}, {"b": "RECAUDACION DE TASAS Y TRIBUTOS", "t": "9321", "d": "PAGOS TRIBUTOS ETV", "rel": "BASE DE DATOS RECAUDACION", "open": "BDUC", "host": "SU00", "imp": "ALTO", "req": "ELEGIR TRANSPORTADORA(HERMES,PROSEGUR)"}, {"b": "RECAUDACION DE TASAS Y TRIBUTOS", "t": "9603", "d": "DETALLE DE TRIBUTO POR CAJERO", "rel": "BASE DE DATOS RECAUDACION", "open": "BDUC", "host": "SU00", "imp": "ALTO", "req": "CODIGO DEL TRIBUTO"}, {"b": "RECAUDACION DE TASAS Y TRIBUTOS", "t": "9605", "d": "CONSULTA DE CUBIGEO", "rel": "BASE DE DATOS RECAUDACION", "open": "BDUC", "host": "SU00", "imp": "ALTO", "req": "NOMBRE DEL DISTRITO"}, {"b": "RECAUDACION DE TASAS Y TRIBUTOS", "t": "9630", "d": "PAGO MULTIEXPRESS", "rel": "BASE DE DATOS RECAUDACION", "open": "BDUC", "host": "SU00", "imp": "ALTO", "req": "NUMERO DE DOCUMENTO"}, {"b": "RECAUDACION DE TASAS Y TRIBUTOS", "t": "9640", "d": "PAGO DE TRIBUTO CON RECIBO EN LINEA", "rel": "BASE DE DATOS RECAUDACION", "open": "BDUC", "host": "SU00", "imp": "ALTO", "req": "NUMERO DE DOCUMENTO"}, {"b": "RECAUDACION DE TASAS Y TRIBUTOS", "t": "9641", "d": "DEVOLUCION DE PAGO DE TASAS EN LINEA", "rel": "BASE DE DATOS RECAUDACION", "open": "BDUC", "host": "SU00", "imp": "ALTO", "req": "TIPO DE DOCUMENTO"}, {"b": "RECAUDACION DE TASAS Y TRIBUTOS", "t": "9650", "d": "PAGO DE TRIBUTO CON RECIBO EFECTIVO Y CHEQUE", "rel": "BASE DE DATOS RECAUDACION", "open": "BDUC", "host": "SU00", "imp": "ALTO", "req": "CODIGO DE TRIBUTO,TIPO DE DOCUMENTO"}, {"b": "RECAUDACION DE TASAS Y TRIBUTOS", "t": "9651", "d": "PAGO DE TRIBUTO CON RECIBO EFECTIVO ME", "rel": "BASE DE DATOS RECAUDACION", "open": "BDUC", "host": "SU00", "imp": "ALTO", "req": "CODIGO DE TRIBUTO,TIPO DE DOCUMENTO"}, {"b": "RECAUDACION DE TASAS Y TRIBUTOS", "t": "9660", "d": "PAGO DE TRIBUTOS VARIOS EFECTIVO Y CHEQUE", "rel": "BASE DE DATOS RECAUDACION", "open": "BDUC", "host": "SU00", "imp": "ALTO", "req": "CODIGO DE TRIBUTO,TIPO DE DOCUMENTO"}, {"b": "RECAUDACION DE TASAS Y TRIBUTOS", "t": "9670", "d": "PAGO DE TRIBUTOS MUNICIPALES EFECTIVO Y CHEQUE", "rel": "BASE DE DATOS RECAUDACION", "open": "BDUC", "host": "SU00", "imp": "ALTO", "req": "CODIGO DE MUNICIPIO,SELECCIONAR TRIBUTO(AGUA POTABLE,ALCABALA,ENERGIA ELECTRICA),NRO DE RECIBO,CODIGO DE CONTRIBUYENTE"}, {"b": "RECAUDACION DE TASAS Y TRIBUTOS", "t": "9680", "d": "PAGO DE TASAS JUDICIALES EFECTIVO Y CHEQUE", "rel": "BASE DE DATOS RECAUDACION", "open": "BDUC", "host": "SU00", "imp": "ALTO", "req": "TRIBUTO,TIPO DE DOCUMENTO,DEPENDENCIA JUDICIAL"}, {"b": "RECAUDACION DE TASAS Y TRIBUTOS", "t": "9690", "d": "INDECI EFECTIVO Y CHEQUE MN", "rel": "BASE DE DATOS RECAUDACION", "open": "BDUC", "host": "SU00", "imp": "ALTO", "req": "TRIBUTO,TIPO DE DOCUMENTO,PERÍODO,COD UBIGEO,CANTIDAD"}, {"b": "RECAUDACION DE TASAS Y TRIBUTOS", "t": "9700", "d": "PAGO CONTRIBUCIONES EFECTIVO Y CHEQUE", "rel": "BASE DE DATOS RECAUDACION", "open": "BDUC", "host": "SU00", "imp": "ALTO", "req": "TRIBUTO,TIPO DE DOCUMENTO,PERIODO,IMPORTE"}, {"b": "RECAUDACION DE TASAS Y TRIBUTOS", "t": "9710", "d": "MIN.DEFENSA-SERVICIO MILITAR EFECTIVO Y CHEQUE", "rel": "BASE DE DATOS RECAUDACION", "open": "BDUC", "host": "SU00", "imp": "ALTO", "req": "TRIBUTO,TIPO DE DOCUMENTO"}, {"b": "ADMINISTRACION Y CONTROL", "t": "0012", "d": "FECHA Y HORA"}, {"b": "ADMINISTRACION Y CONTROL", "t": "0201", "d": "TOTALES DE CAJERO"}, {"b": "ADMINISTRACION Y CONTROL", "t": "0202", "d": "SALDO DE CAJA POR OFICINA"}, {"b": "ADMINISTRACION Y CONTROL", "t": "0210", "d": "CONSULTA/BORRE TOT. CAJERO HOST"}, {"b": "ADMINISTRACION Y CONTROL", "t": "0212", "d": "SALDO DE CAJA RECIBIDOR PAGADOR"}, {"b": "ADMINISTRACION Y CONTROL", "t": "0213", "d": "CONSULTA SALDOS POR RECIBIDOR PAGADOR"}, {"b": "ADMINISTRACION Y CONTROL", "t": "0221", "d": "CIERRE TEMPORAL DE CAJERO"}, {"b": "ADMINISTRACION Y CONTROL", "t": "0222", "d": "CIERRE TOTAL DE CAJERO"}, {"b": "ADMINISTRACION Y CONTROL", "t": "0231", "d": "CONSULTA TOTALES DE AGENCIA"}, {"b": "ADMINISTRACION Y CONTROL", "t": "0250", "d": "ULTIMA TRANS.CAJERO EN HOST"}, {"b": "ADMINISTRACION Y CONTROL", "t": "0255", "d": "ULTIMA TRANS POR SERVICIO EN HOST"}, {"b": "ADMINISTRACION Y CONTROL", "t": "0285", "d": "CONSULTA LIB .ELECTORALROB./EXTR."}, {"b": "ADMINISTRACION Y CONTROL", "t": "0290", "d": "CONSULTA DE FIRMAS POR LECTORA"}, {"b": "ADMINISTRACION Y CONTROL", "t": "0610", "d": "SALIDA DE CAJA MN Y ME"}, {"b": "ADMINISTRACION Y CONTROL", "t": "0666", "d": "ASIGNACION DE CLAVE POR OLVIDO"}, {"b": "ADMINISTRACION Y CONTROL", "t": "0710", "d": "INGRESO A CAJA MN Y ME"}, {"b": "ADMINISTRACION Y CONTROL", "t": "1355", "d": "REGISTRO DE INGRESO Y DESPLAZAMIENTO HORAS OFICINA"}, {"b": "ADMINISTRACION Y CONTROL", "t": "1356", "d": "REGISTRO DE SALIDA"}, {"b": "ADMINISTRACION Y CONTROL", "t": "1357", "d": "REGISTRO DE SALIDA AUTORIZADA"}, {"b": "ADMINISTRACION Y CONTROL", "t": "1365", "d": "NUEVO REGISTRO DE INGRESO Y DESPLAZAMIENTO HORAS OFICINA"}, {"b": "ADMINISTRACION Y CONTROL", "t": "1366", "d": "NUEVO REGISTRO DE SALIDA"}, {"b": "ADMINISTRACION Y CONTROL", "t": "1367", "d": "NUEVO REGISTRO DE SALIDA AUTORIZADA"}, {"b": "ADMINISTRACION Y CONTROL", "t": "1368", "d": "REGISTRO DE INGRESO Y SALIDA PRACTICANTES"}, {"b": "ADMINISTRACION Y CONTROL", "t": "1904", "d": "REGISTRO USUARIO ATENDIDO"}, {"b": "ADMINISTRACION Y CONTROL", "t": "1906", "d": "REGISTRO FINAL USUARIO ATENDIDO"}, {"b": "ADMINISTRACION Y CONTROL", "t": "1907", "d": "REGISTRO DE ENCUESTA"}, {"b": "ADMINISTRACION Y CONTROL", "t": "8030", "d": "CAMBIO DE CLAVE"}, {"b": "ADMINISTRACION Y CONTROL", "t": "8060", "d": "LIBERACION DE USUARIO"}, {"b": "ADMINISTRACION Y CONTROL", "t": "8080", "d": "IMPRESIÓN DE CAJEROS Y/O DEPENDENCIAS"}, {"b": "ADMINISTRACION Y CONTROL", "t": "8081", "d": "CONSULTA DE DATOS CAJERO SARAWEB"}, {"b": "ADMINISTRACION Y CONTROL", "t": "9080", "d": "BLOQUEO/DESBLOQUEO DEL SISTEMA"}, {"b": "TRANSFERENCIAS", "t": "0414", "d": "TRANSFERENCIAS IB CTA CTE"}, {"b": "TRANSFERENCIAS", "t": "1400", "d": "TRANSF.INTERBAN.CTA AHORROS ME.A O/B MN Y ME"}, {"b": "TRANSFERENCIAS", "t": "1410", "d": "TRANSF.INTERBAN.CTA AHORROS MN.A O/B MN Y ME"}, {"b": "TRANSFERENCIAS", "t": "6810", "d": "PAGO EN EFECTIVO DE TRANSFERENCIAS DEL EXTERIOR"}, {"b": "PAGO DE TARJETA DE CREDITO", "t": "1401", "d": "PAGO A CTA/TARJ.CREDITO.OB MN.ME C/CARGO EN CTA ME"}, {"b": "PAGO DE TARJETA DE CREDITO", "t": "1420", "d": "PAGO A CTA/TARJ.CREDITO.OB MN.ME C/CARGO EN CTA MN"}, {"b": "CTS", "t": "2490", "d": "EXTORNO ESPECIAL CTS"}, {"b": "CTS", "t": "2500", "d": "CONSULTA Y RETIRO CTS MN. ME"}, {"b": "CTS", "t": "2510", "d": "CONSULTA DE SALDO CTS MN.Y ME"}, {"b": "CTS", "t": "2520", "d": "CANCELACION CTS MN/ME"}, {"b": "CTS", "t": "2524", "d": "CONSULTA ULTIMOS MOVIMIENTOS CTS"}, {"b": "CTS", "t": "2525", "d": "IMPRESIÓN CONTRATO CTS"}, {"b": "CTS", "t": "2545", "d": "REIMPRESION CONTRATO CTS"}, {"b": "CTS", "t": "4525", "d": "VINCULACION DE CUENTA CTS A TARJETA VISA"}, {"b": "CTS", "t": "4527", "d": "DESVINCULACION DE CUENTA CTS A TARJETA VISA"}, {"b": "PRESTAMOS MULTIRED", "t": "3000", "d": "IMPRESIÓN /CRONOGRAMA/REIMPRESION/LIQUIDACION"}, {"b": "PRESTAMOS MULTIRED", "t": "3001", "d": "IMPRES/SOLICITUD Y POLIZA DE SEGUROS/HOJA RESUMEN"}, {"b": "PRESTAMOS MULTIRED", "t": "3010", "d": "DESEMBOLSO DE PRESTAMO"}, {"b": "PRESTAMOS MULTIRED", "t": "3012", "d": "EXT. ESPECIAL DE PAGO PRESTAMOS"}, {"b": "PRESTAMOS MULTIRED", "t": "3020", "d": "CUOTAS VENC.ADELANT.O TOT PRESTAMO EN EFECT O C/C"}, {"b": "PRESTAMOS MULTIRED", "t": "3030", "d": "PAGO POR DUPLICADO DE CALENDARIO DE PAGO"}, {"b": "PRESTAMOS MULTIRED", "t": "3035", "d": "CONSULTA DE PRESTAMOS"}, {"b": "PRESTAMOS MULTIRED", "t": "3040", "d": "COBRO PRESTAMOS PAGARE/NOMBRE"}, {"b": "PRESTAMOS MULTIRED", "t": "3054", "d": "PRESTAMO MULTIRED ADELANTO DE CUOTAS"}, {"b": "PRESTAMOS MULTIRED", "t": "3060", "d": "PREPAGO PRESTAMO MULTIRED"}, {"b": "PRESTAMOS MULTIRED", "t": "3070", "d": "CONSTANCIA DE PAGO EN EFECTIVO O CON CARGO EN CTA"}, {"b": "PRESTAMOS MULTIRED", "t": "3080", "d": "PAGO DE PROTESTO DE PAGARE"}, {"b": "PRESTAMOS MULTIRED", "t": "3090", "d": "PAGO DE PRESTAMOS GOBIERNOS LOCALES"}, {"b": "PRESTAMOS MULTIRED", "t": "3140", "d": "ADELANTO DE CUOTAS PAGO EXCEDENTE"}, {"b": "TELEGIROS", "t": "7141", "d": "CONSULTA ALFABETICA DE OFICINAS"}, {"b": "TELEGIROS", "t": "7504", "d": "EMISION DE TELEGIRO EN MN/ME"}, {"b": "TELEGIROS", "t": "7510", "d": "CONSULTA POR DOCUMENTO Y PAGO DE GIROS EN MN Y ME"}, {"b": "TELEGIROS", "t": "7530", "d": "CAMBIO DE DESTINO TELEGIROS MN Y ME"}, {"b": "TELEGIROS", "t": "7600", "d": "PAGO DE TELEGIRO EN MN Y ME"}, {"b": "TELEGIROS", "t": "7700", "d": "ANULACION DE GIRO EN MN Y ME"}, {"b": "DEPOSITOS JUDICIALES Y ADMINISTRATIVOS", "t": "2100", "d": "CONSULTA DE CERTIFICADO MN Y ME"}, {"b": "DEPOSITOS JUDICIALES Y ADMINISTRATIVOS", "t": "2200", "d": "EMISION DE CERTIFICADO EN MN Y ME"}, {"b": "DEPOSITOS JUDICIALES Y ADMINISTRATIVOS", "t": "2201", "d": "CONSTITUCION DE DEPOSITOS JUDICIALES"}, {"b": "DEPOSITOS JUDICIALES Y ADMINISTRATIVOS", "t": "2220", "d": "LIQUIDACION DEPOSITO JUD/ADM EN MN Y ME"}, {"b": "DEPOSITOS JUDICIALES Y ADMINISTRATIVOS", "t": "2221", "d": "LIQUIDACION DE ORDEN DE PAGO"}, {"b": "DEPOSITOS JUDICIALES Y ADMINISTRATIVOS", "t": "2222", "d": "EXTORNO ESPEC. LIQ.DEP JUD/ADM"}, {"b": "DEPOSITOS JUDICIALES Y ADMINISTRATIVOS", "t": "2250", "d": "DUPLICADO DE CERTIFICADO EN MN Y ME"}, {"b": "DEPOSITOS JUDICIALES Y ADMINISTRATIVOS", "t": "2300", "d": "CONSULTA DE LIQUIDACION"}, {"b": "DEPOSITOS JUDICIALES Y ADMINISTRATIVOS", "t": "2301", "d": "PRE LIQUIDACION PROYECTADA"}, {"b": "DEPOSITOS JUDICIALES Y ADMINISTRATIVOS", "t": "2302", "d": "REIMPRESION HOJA LIQUIDACION DEPOSITOS VIRTUALES"}, {"b": "CORRESPONSALIA", "t": "0370", "d": "COBRANZA EN LINEA"}, {"b": "CORRESPONSALIA", "t": "0514", "d": "DESEMBOLSOS EN LINEA IFIS"}, {"b": "CORRESPONSALIA", "t": "0515", "d": "PAGOS EN LINEA IFIS"}, {"b": "CORRESPONSALIA", "t": "0525", "d": "CONSULTA /DESEMBOLSO MN/ME"}, {"b": "CORRESPONSALIA", "t": "0540", "d": "CONSULTA/RECUPERACIONES MN/ME"}, {"b": "CORRESPONSALIA", "t": "0542", "d": "EXT. ESPECIAL RECUPERACIONES BD"}, {"b": "CORRESPONSALIA", "t": "0550", "d": "CONSULTA/DESEMBOLSO MN /ME"}, {"b": "CORRESPONSALIA", "t": "0552", "d": "EXT. ESPECIAL DESEMBOLSOS BD"}, {"b": "CORRESPONSALIA", "t": "0831", "d": "DESEMBOLSO PRESTAMOS EFECTIVO MN Y ME"}, {"b": "CORRESPONSALIA", "t": "0840", "d": "DEPOSITO ESPECIAL EFECTIVO MN/ME"}, {"b": "CORRESPONSALIA", "t": "0980", "d": "PAGO DE PLANILLAS MN"}, {"b": "CORRESPONSALIA", "t": "3210", "d": "CONSULTA /PAGO SEDAPAL"}, {"b": "CORRESPONSALIA", "t": "3212", "d": "EXTORNO ESPECIAL PAGO SEDAPAL"}, {"b": "CORRESPONSALIA", "t": "3270", "d": "CONSULTA PAGO TELEFONICA MN/ME"}, {"b": "CORRESPONSALIA", "t": "3280", "d": "PAGO SERVICIOS TELEFONIA MN/ME"}, {"b": "CORRESPONSALIA", "t": "3710", "d": "PAGO FACTURAS"}, {"b": "CORRESPONSALIA", "t": "3711", "d": "PAGO DE FACTURAS EN LINEA"}, {"b": "CORRESPONSALIA", "t": "3712", "d": "EXTORNO SAFE PAGO FACTURAS"}, {"b": "CORRESPONSALIA", "t": "3730", "d": "PAGO DE FACTURAS SIN BD"}, {"b": "CORRESPONSALIA", "t": "3740", "d": "CHEQUES RECHAZADOS FACTURAS"}, {"b": "CORRESPONSALIA", "t": "3910", "d": "PAGO CUPONES VARIOS EFECTIVO MN Y ME"}, {"b": "CORRESPONSALIA", "t": "3970", "d": "PAGO LUZ Y AGUA PROVINCIAS"}, {"b": "CORRESPONSALIA", "t": "4100", "d": "CONSULTA ALFABETICA CORRESPONSALIA"}, {"b": "CORRESPONSALIA", "t": "4110", "d": "CONSULTA FECHA PROTESTO"}, {"b": "CORRESPONSALIA", "t": "4300", "d": "CANCELACION EN EFECTIVO MN Y ME"}, {"b": "CORRESPONSALIA", "t": "4301", "d": "CANCELACION CON CHEQUE MN Y ME"}, {"b": "CORRESPONSALIA", "t": "4310", "d": "RENOVACION EN EFECTIVO MN Y ME"}, {"b": "CORRESPONSALIA", "t": "4311", "d": "RENOVACION CON CHEQUE MN Y ME"}, {"b": "CORRESPONSALIA", "t": "4320", "d": "PROTESTO DE DOCUMENTO MN Y ME"}, {"b": "CORRESPONSALIA", "t": "4330", "d": "DEVOLUCION DE DOCUMENTO MN Y ME"}, {"b": "CORRESPONSALIA", "t": "4400", "d": "ANULACION DE OPERACIÓN MN Y ME"}, {"b": "CORRESPONSALIA", "t": "6190", "d": "CONSULTA DE REMESAS POR CAJERO"}, {"b": "CORRESPONSALIA", "t": "6690", "d": "PAGO DE REMESAS DEL EXTERIOR"}, {"b": "CORRESPONSALIA", "t": "6790", "d": "ENVIO DE REMESAS AL EXTERIOR"}, {"b": "RECAUDACION DE TRIBUTOS SUNAT Y ADUANAS", "t": "0565", "d": "DEVOLUCION DE IMPUESTOS SUNAT"}, {"b": "RECAUDACION DE TRIBUTOS SUNAT Y ADUANAS", "t": "0671", "d": "NOTA DE CARGO SUNAT"}, {"b": "RECAUDACION DE TRIBUTOS SUNAT Y ADUANAS", "t": "0771", "d": "NOTA DE ABONO SUNAT"}, {"b": "RECAUDACION DE TRIBUTOS SUNAT Y ADUANAS", "t": "0910", "d": "ADUANA ABONO POR BENEFICIARIO MN"}, {"b": "RECAUDACION DE TRIBUTOS SUNAT Y ADUANAS", "t": "9150", "d": "ADUANAS RECAUDACION DIRECTA EFECTO Y CHEQUE MN"}, {"b": "RECAUDACION DE TRIBUTOS SUNAT Y ADUANAS", "t": "9191", "d": "PAGO FACIL IMP VENTA ARROZ PILADO"}, {"b": "RECAUDACION DE TRIBUTOS SUNAT Y ADUANAS", "t": "9201", "d": "TOTALES TEF SUNAT POR CAJERO"}, {"b": "RECAUDACION DE TRIBUTOS SUNAT Y ADUANAS", "t": "9202", "d": "TOTALES TEF SUNAT POR OFICINA"}, {"b": "RECAUDACION DE TRIBUTOS SUNAT Y ADUANAS", "t": "9204", "d": "DETALLE TEF SUNAT POR CAJERO"}, {"b": "RECAUDACION DE TRIBUTOS SUNAT Y ADUANAS", "t": "9205", "d": "TOTALES PDT SUNAT POR CAJERO"}, {"b": "RECAUDACION DE TRIBUTOS SUNAT Y ADUANAS", "t": "9206", "d": "DETALLE SUNAT VARIOS POR OFICINA"}, {"b": "RECAUDACION DE TRIBUTOS SUNAT Y ADUANAS", "t": "9207", "d": "DETALLE SUNAT VARIOS POR CAJERO"}, {"b": "RECAUDACION DE TRIBUTOS SUNAT Y ADUANAS", "t": "9211", "d": "PAGO FACIL RUS"}, {"b": "RECAUDACION DE TRIBUTOS SUNAT Y ADUANAS", "t": "9215", "d": "PAGOS VARIOS OTROS F.V. 1673"}, {"b": "RECAUDACION DE TRIBUTOS SUNAT Y ADUANAS", "t": "9221", "d": "PAGO FACIL - RECIBO DE ARRENDAMIENTO"}, {"b": "RECAUDACION DE TRIBUTOS SUNAT Y ADUANAS", "t": "9225", "d": "REGIMENES ESPECIALES"}, {"b": "RECAUDACION DE TRIBUTOS SUNAT Y ADUANAS", "t": "9241", "d": "PAGO FACIL - TRABAJADORES DEL HOGAR"}, {"b": "RECAUDACION DE TRIBUTOS SUNAT Y ADUANAS", "t": "9251", "d": "PAGO FACIL- BOLETA DE PAGOS VARIOS"}, {"b": "RECAUDACION DE TRIBUTOS SUNAT Y ADUANAS", "t": "9261", "d": "PAGO FACIL - BOLETA RESPONSABILIDAD SOLIDARIA"}, {"b": "RECAUDACION DE TRIBUTOS SUNAT Y ADUANAS", "t": "9271", "d": "PAGO FACIL SUNAT PDT"}, {"b": "RECAUDACION DE TRIBUTOS SUNAT Y ADUANAS", "t": "9275", "d": "PDT CARGO CTE CTE MN DETRACCIONES"}, {"b": "RECAUDACION DE TRIBUTOS SUNAT Y ADUANAS", "t": "9280", "d": "CONSULTA PAGO SEG. IND. ESSALUD"}, {"b": "RECAUDACION DE TRIBUTOS SUNAT Y ADUANAS", "t": "9291", "d": "PAGO FACIL - NUEVO RUS"}, {"b": "RECAUDACION DE TRIBUTOS SUNAT Y ADUANAS", "t": "9505", "d": "PAGO FACIL - BOLETA DE PAGO NPS"}, {"b": "RECAUDACION DE TRIBUTOS SUNAT Y ADUANAS", "t": "9610", "d": "TRIBUTOS SUNAT EFECTIVO Y CHEQUE MN"}, {"b": "RECAUDACION DE TRIBUTOS SUNAT Y ADUANAS", "t": "9614", "d": "TOTALES TRIB SUNAT POR CAJERO"}, {"b": "RECAUDACION DE TRIBUTOS SUNAT Y ADUANAS", "t": "9615", "d": "TOTALES TRIB SUNAT POR OFICINA"}, {"b": "RECAUDACION DE TRIBUTOS SUNAT Y ADUANAS", "t": "9616", "d": "DETALLE FORM SUNAT POR CAJERO"}, {"b": "CAMBIOS", "t": "3800", "d": "CONSULTA TIPO DE CAMBIO"}, {"b": "CAMBIOS", "t": "3802", "d": "CONSULTA APROBACION CV M.E"}, {"b": "CAMBIOS", "t": "3805", "d": "TOTALES DE COMPRA VENTA M.E CAJERO"}, {"b": "CAMBIOS", "t": "3806", "d": "TOTALES DE COMPRA VENTA M.E AGENCIA"}, {"b": "CAMBIOS", "t": "3811", "d": "COMPRA M.E PASAPORTE"}, {"b": "CAMBIOS", "t": "3812", "d": "EXTORNO ESPECIAL COMPRA VENTA"}, {"b": "CAMBIOS", "t": "3840", "d": "COMPRA M.E."}, {"b": "CAMBIOS", "t": "3850", "d": "VENTA  M.E"}, {"b": "CAMBIOS", "t": "3870", "d": "COMPRA DE M.E APROBADA"}, {"b": "CAMBIOS", "t": "3880", "d": "VENTA M.E. APROBADA"}, {"b": "COMISIONES", "t": "3610", "d": "PAGO COMISION  MN/ME"}, {"b": "COMISIONES", "t": "4503", "d": "REGISTRO DE CLAVE MEF. - SIAF"}, {"b": "pagos FONAVI", "t": "3500", "d": "CONSULTA RECIBOS PAGOS DIVERSOS"}, {"b": "pagos FONAVI", "t": "3501", "d": "REGISTRO FONAVI"}, {"b": "pagos FONAVI", "t": "3503", "d": "RECEPCION DOCUMENTOS FONAVI"}, {"b": "pagos FONAVI", "t": "3510", "d": "PAGOS DIVERSOS EFECTIVO MN y ME"}, {"b": "pagos FONAVI", "t": "3511", "d": "PAGOS DIVERSOS  CHEQUE MN y ME"}, {"b": "PAGOS DE FRACCIONAMIENTO", "t": "3550", "d": "PAGO DE FRACCIONAMIENTO"}, {"b": "PAGOS", "t": "3505", "d": "DESAFILIACION AFP/ONP"}, {"b": "PAGOS", "t": "3535", "d": "VENTA DE BASES"}, {"b": "PAGOS", "t": "3590", "d": "REGULARIZACION PAGO MULTIPAGOS"}, {"b": "PAGOS", "t": "3770", "d": "VENTA PRODUCTOS - SERVICIOS"}, {"b": "PAGOS", "t": "3780", "d": "DEPÓSITO  CAPITAL SOCIAL MACPYME"}, {"b": "PAGOS", "t": "3785", "d": "CONSULTA/RETIRO CAPITAL SOCIAL MACPYME"}, {"b": "PAGOS", "t": "4700", "d": "DISPOSICION EFECTIVO MASTERCARD"}, {"b": "PAGOS", "t": "9316", "d": "DESPÓSITO EN CTA CTE CUSTODIO"}, {"b": "CONTABLES", "t": "9300", "d": "MANDATOS LIMA", "rel": "ok", "open": "solo matricial de la hibrida"}, {"b": "CONTABLES", "t": "9320", "d": "MANDATOS AGENCIAS C", "open": "solo matricial de la hibrida"}, {"b": "CONTABLES", "t": "9330", "d": "CUANTAS DE ORDEN", "rel": "ok"}, {"b": "CONTABLES", "t": "9331", "d": "MANDATOS ATM'S AGENCIAS C"}, {"b": "CONTABLES", "t": "9340", "d": "CUENTAS DE ORDEN - AGENCIAS C", "rel": "transaccion no existe"}, {"b": "CONTABLES", "t": "9350", "d": "CUENTAS DE CAJA", "open": "solo matricial de la hibrida"}, {"b": "CONTABLES", "t": "9351", "d": "OPERACIONIES", "open": "solo matricial de la hibrida"}, {"b": "CONTABLES", "t": "9355", "d": "CHEQUES RECHAZADOS POR BANCOS", "open": "solo matricial de la hibrida"}, {"b": "CONTABLES", "t": "9360", "d": "CAJEROS MULTIRED", "rel": "ok", "open": "solo matricial en hibrida"}, {"b": "CONTABLES", "t": "9361", "d": "CREDITOS MUNIBANCA", "rel": "ok", "open": "solo matricial en hibrida"}, {"b": "CONTABLES", "t": "9365", "d": "PRINCIPALES CONTRIBUYENTES", "rel": "ok", "open": "solo matricial en hibrida"}, {"b": "CONTABLES", "t": "9370", "d": "CREDITOS EXSUMERBAN", "rel": "ok", "open": "solo matricial en hibrida"}, {"b": "CONTABLES", "t": "9371", "d": "CONTABILIDAD", "rel": "OK", "open": "solo matricial en hibrida"}, {"b": "CONTABLES", "t": "9375", "d": "PAGO DE PROVEEDORES", "rel": "ok", "open": "solo matricial en hibrida", "host": "1919010102 cta contable (dependencias o agencia 3)"}, {"b": "CONTABLES", "t": "9380", "d": "ALQUILERES", "rel": "tipo de documento errado", "host": "1919010103 cta contable (dependencias o agencia 3)"}, {"b": "CONTABLES", "t": "9381", "d": "VIATICOS COMISION DE SERVICIOS", "rel": "tipo de documento errado"}, {"b": "CONTABLES", "t": "9385", "d": "REGULARIZACION CONTABLE", "rel": "mensaje no existe (nro cta contable)"}, {"b": "CONTABLES", "t": "9390", "d": "OPERACIONES ESPECIALES MASIVAS", "rel": "ok", "open": "matricial en hibrida"}, {"b": "CONTABLES", "t": "9391", "d": "OPER. ESPECIALES MASIVAS MAGNETICO MN", "rel": "mensaje no existe (nro lote, cta )"}, {"b": "CONTABLES", "t": "9400", "d": "REPORTES CONTABLES", "rel": "ok (nro cta contable)", "open": "no imprimio en hibrido, solo OKI"}, {"b": "CONTABLES", "t": "9450", "d": "TRASLADO DE FONDOS MN y ME", "rel": "importe no cuadra"}, {"b": "CONTABLES", "t": "9452", "d": "EXTORNO ESPECIAL TRASLADO DE FONDO MN y ME", "rel": "trans original no encontrada - op no procesada"}, {"b": "CONTABLES", "t": "9460", "d": "TRASLADO DE FONDOS / PERNOCTE  MN y ME", "rel": "operación no procesada"}, {"b": "CONTABLES", "t": "9462", "d": "EXTORNO ESPECIAL PERNOCTE MN y ME", "rel": "trans original no encontrada - op no procesada"}, {"b": "CONTABLES", "t": "9465", "d": "TRASLADO DE FONDOS / PERNOCTE  PROV.  MN y ME", "rel": "importe no cuadra"}, {"b": "CONTABLES", "t": "9490", "d": "ABASTECIMIENTO CAJEROS MULTIRED", "rel": "no existe codigo de cajero ATM"}, {"b": "CONTABLES", "t": "9491", "d": "TRASLADO DE FONDOS ATMS", "rel": "no existen traslados de fondos", "open": "chequear que no imprime en la hibrida solo OKI"}, {"b": "CUENTAS A PLAZO", "t": "5200", "d": "DEPOSITO CUENTA A PLAZO  MN y ME"}, {"b": "CUENTAS A PLAZO", "t": "5207", "d": "IMPRESIÓN CONSTANCIA DE DEPOSITO"}, {"b": "CUENTAS A PLAZO", "t": "5220", "d": "PAGO INTERESES CUENTA A PLAZO  MN y ME"}, {"b": "CUENTAS A PLAZO", "t": "5230", "d": "CANCELACION CUENTA A PLAZO MN y ME"}, {"b": "CUENTAS A PLAZO", "t": "5290", "d": "EXTORNO ESPECIAL CUENTAS A PLAZO"}, {"b": "CREDITOAS HIPOTECARIOS", "t": "3107", "d": "CONSULTA COBRO PRESTAMOS HIPOTECARIOS"}, {"b": "CREDITOAS HIPOTECARIOS", "t": "3110", "d": "PAGO DE TRAMITE CRED. HIPOTECARIOS"}, {"b": "CREDITOAS HIPOTECARIOS", "t": "3112", "d": "EMISION CHEQ. GER. HIPOTECARIOS"}, {"b": "CREDITOAS HIPOTECARIOS", "t": "3120", "d": "COBRO PRESTAMOS HIPOTECARIOS"}, {"b": "CREDITOAS HIPOTECARIOS", "t": "3130", "d": "PRE.PAGO PRESTAMOS HIPOTECARIOS"}, {"b": "CREDITOAS HIPOTECARIOS", "t": "3131", "d": "IMPRESIÓN CRONOGRAMA PREPAGOS"}, {"b": "CREDITOAS HIPOTECARIOS", "t": "3134", "d": "RE - IMPRESIÓN CRONOGRAMA CREDITOS HIPOTECARIOS"}, {"b": "CREDITOAS HIPOTECARIOS", "t": "3150", "d": "CREDITO HIPOTECARIO ADELANTO DE CUOTAS"}, {"b": "TARJETA DE CREDITO", "t": "4000", "d": "DISPOSICION DE EFECTIVO"}, {"b": "TARJETA DE CREDITO", "t": "4001", "d": "PAGO DE DEUDA TARJETA DE CREDITO"}, {"b": "TARJETA DE CREDITO", "t": "4002", "d": "CONSULTA DE SALDOS Y ULT. MOVIMIENTOS"}, {"b": "TARJETA DE CREDITO", "t": "4004", "d": "ACTIVACION TARJETA DE CREDITO / GENERACION DE CLAVE"}, {"b": "TARJETA DE CREDITO", "t": "4005", "d": "CAMBIO DE CLAVE"}, {"b": "TARJETA DE CREDITO", "t": "4023", "d": "IMPR. POLIZA DE SEGUROS / HOJA RESUMEN"}, {"b": "TARJETA DE CREDITO", "t": "4030", "d": "TRASLADO DE DEUDA PM A TC"}, {"b": "TARJETA DE CREDITO", "t": "4040", "d": "AMPLACION/REDUCCION LINEA DE CREDITO  TC"}, {"b": "CHEQUE DE GERENCIA", "t": "5100", "d": "CONSULTA CHEQUE DE GERENCIA EN MN/ME"}, {"b": "CHEQUE DE GERENCIA", "t": "5440", "d": "SUSPENSIÓN CHEQUE DE GERENCIA EN MN/ME"}, {"b": "CHEQUE DE GERENCIA", "t": "5450", "d": "LEVANTAMIENTO SUSPENSIÓN CH/GERENCIA EN MN/ME"}, {"b": "CHEQUE DE GERENCIA", "t": "5490", "d": "EXTORNO ESPECIAL CHQ./GER MN/ME"}, {"b": "CHEQUE DE GERENCIA", "t": "5500", "d": "EMISION CHEQ. GER MN y ME C/EFECTIVO"}, {"b": "CHEQUE DE GERENCIA", "t": "5501", "d": "EMISION CHEQ. GER. MN y ME s/EFECTIVO"}, {"b": "CHEQUE DE GERENCIA", "t": "5600", "d": "PAGO CHEQUE GERENCIA MN y ME"}, {"b": "CHEQUE DE GERENCIA", "t": "5601", "d": "CHEQUE DE GERENCIA CARGADO MN Y ME"}, {"b": "CHEQUE DE GERENCIA", "t": "5700", "d": "ANULACION CHEQUE GERENCIA MN y ME"}]}</script>
+<script>
+
+/* =========================================================
+   Asistente QA — MVP
+   Base de conocimiento derivada del repositorio del área.
+   Regla dura: si no está documentado, no se responde.
+   ========================================================= */
+const DATA = JSON.parse(document.getElementById('dataset').textContent);
+const GUARDRAIL = "No dispongo de información documentada en mi versión actual para este tema. Por favor, consulta con un analista senior.";
+
+const norm = s => (s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+const esc  = s => String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+/* ---------- helpers de render ---------- */
+function linksRows(list){
+  return list.map((l,i)=>{
+    const u = /^https?:/i.test(l.u)
+      ? `<a href="${esc(l.u)}" target="_blank" rel="noopener">${esc(l.u)}</a>`
+      : `<code>${esc(l.u)}</code>`;
+    const cred = l.pw
+      ? `<span class="cred" data-pw="${esc(l.pw)}"><span class="pw-mask">••••••••</span><span class="pw-real" hidden>${esc(l.pw)}</span></span>`
+      : '<span class="hint">sin credencial</span>';
+    return `<tr><td>${esc(l.n)}</td><td>${u}</td><td class="m">${l.user?esc(l.user):'—'}</td><td class="m">${cred}</td></tr>`;
+  }).join("");
+}
+function linksTable(list){
+  list = list || DATA.links;
+  return `<div class="credbar">
+      <button class="reveal" id="revealpw" aria-pressed="false">Mostrar credenciales</button>
+      <span class="hint" id="linkscount">${DATA.links.filter(l=>l.pw).length} de ${DATA.links.length} accesos tienen credencial registrada</span>
+    </div>
+    <div class="finder"><input id="linksq" placeholder="Filtrar por nombre de servicio, ej.: bduc, websphere, saraweb…" autocomplete="off"></div>
+    <div class="tbl-scroll"><table><thead><tr><th>Servicio</th><th>Enlace</th><th>Usuario</th><th>Clave</th></tr></thead><tbody id="linksbody">${linksRows(list)}</tbody></table></div>`;
+}
+// Palabras genéricas de la pregunta que NO sirven para filtrar por nombre de
+// servicio (si las dejamos, "link de bduc" filtraría también por "link").
+const LINK_GENERIC = new Set(["link","links","enlace","enlaces","acceso","accesos",
+  "url","urls","pagina","portal","dame","dime","cual","cuales","muestra",
+  "muestrame","necesito","quiero","dile","el","la","los","las","de","del"]);
+function guessLinkFilter(q){
+  return tokens(q||"").filter(t=>!LINK_GENERIC.has(t)).join(" ");
+}
+let LAST_QUERY = "";
+function wireCreds(root){ wireLinksTable(root); }
+function wireLinksTable(root){
+  const btn = root.querySelector('#revealpw'); if(!btn) return;
+  const body = root.querySelector('#linksbody'), cnt = root.querySelector('#linkscount'), inp = root.querySelector('#linksq');
+  let on=false;
+  const applyReveal=()=>{
+    root.querySelectorAll('.pw-mask').forEach(e=>e.hidden=on);
+    root.querySelectorAll('.pw-real').forEach(e=>e.hidden=!on);
+  };
+  btn.onclick=()=>{
+    on=!on;
+    btn.textContent = on ? 'Ocultar credenciales' : 'Mostrar credenciales';
+    btn.setAttribute('aria-pressed', on?'true':'false');
+    applyReveal();
+  };
+  // Delegación de eventos en la tabla: los renglones se reemplazan al
+  // filtrar, así que escuchar en el contenedor evita perder el clic-para-copiar.
+  body.addEventListener('click', e=>{
+    const c = e.target.closest('.cred'); if(!c) return;
+    const v = c.dataset.pw;
+    if(navigator.clipboard) navigator.clipboard.writeText(v).then(()=>{
+      const p=document.createElement('span'); p.className='copied'; p.textContent='copiado';
+      c.appendChild(p); setTimeout(()=>p.remove(),1200);
+    });
+  });
+  const runFilter=(term)=>{
+    const q = norm(term).trim();
+    const list = q ? DATA.links.filter(l=>norm(l.n).includes(q)) : DATA.links;
+    body.innerHTML = linksRows(list);
+    cnt.textContent = q
+      ? `${list.length} coincidencia(s) para "${term.trim()}"`
+      : `${DATA.links.filter(l=>l.pw).length} de ${DATA.links.length} accesos tienen credencial registrada`;
+    applyReveal();
+  };
+  inp.addEventListener('input', ()=>runFilter(inp.value));
+  // Si la pregunta que trajo hasta esta ficha menciona un servicio puntual
+  // ("link de bduc"), filtramos de una vez en vez de mostrar los 30 links.
+  if(LAST_QUERY){
+    const guess = guessLinkFilter(LAST_QUERY);
+    if(guess && DATA.links.some(l=>norm(l.n).includes(norm(guess)))){
+      inp.value = guess;
+      runFilter(guess);
+    }
+  }
+  LAST_QUERY = "";
+}
+function trxRows(list){
+  return list.map(t=>`<tr>
+    <td class="m"><b>${esc(t.t)}</b></td>
+    <td>${esc(t.d)}<div class="hint">${esc(t.b)}${t.host?' · HOST '+esc(t.host):''}${t.open?' · '+esc(t.open):''}${t.imp?' · Impacto '+esc(t.imp):''}</div></td>
+    <td>${t.req?esc(t.req):'—'}</td></tr>`).join("");
+}
+function trxTable(list){
+  return `<div class="tbl-scroll"><table><thead><tr><th>TXN</th><th>Transacción</th><th>Requisitos</th></tr></thead><tbody>${trxRows(list)}</tbody></table></div>`;
+}
+
+/* =========================================================
+   BASE DE CONOCIMIENTO
+   ========================================================= */
+const MODULES = [
+ {id:"01", name:"Links", status:"documentado"},
+ {id:"02", name:"Inicio de día", status:"documentado"},
+ {id:"03", name:"Canales", status:"parcial"},
+ {id:"04", name:"Documentación en ClearQuest", status:"parcial"},
+ {id:"05", name:"Procedimientos", status:"documentado"},
+ {id:"06", name:"Reinicios", status:"parcial"},
+ {id:"07", name:"HOST", status:"documentado"},
+ {id:"08", name:"OPEN", status:"parcial"},
+ {id:"09", name:"TRX", status:"documentado"},
+ {id:"10", name:"SaraWeb", status:"documentado"},
+ {id:"11", name:"FAQ", status:"documentado"},
+ {id:"12", name:"Chat con IA", status:"directo"},
+ {id:"13", name:"Aportes de Admin", status:"dinámico"}
+];
+
+const KB = [
+/* ================= 01 LINKS ================= */
+{
+ id:"01.1", mod:"01", title:"Enlaces de certificación",
+ src:"01_Links Certi.xlsx",
+ kw:["link","links","enlace","enlaces","url","acceso","accesos","portal","clearquest","cq web","websphere","bduc","openshift","ivanti","comp","oracle 12c","multired","pagalo","hub","monitor multipagos","carpeta compartida","poem","facial","identia","direccion","donde entro","sitio"],
+ body:()=>`<p>Fuente oficial de accesos del área. ${DATA.links.length} servicios registrados.</p>
+ ${linksTable()}
+ <div class="note"><b>Credenciales de certificación.</b> Están ocultas por defecto para no exponerlas al compartir pantalla. Clic en una clave para copiarla. Uso exclusivo de ambientes de prueba: si alguna deja de funcionar, se valida contra <code>01_Links Certi.xlsx</code> en la carpeta compartida.</div>`,
+ after:(root)=>wireCreds(root),
+ fu:["¿Qué canales se verifican después del inicio de día?","¿Cuáles son los servidores de SaraWeb?"]
+},
+
+/* ================= 02 INICIO DE DÍA ================= */
+{
+ id:"02.0", mod:"02", title:"Inicio de día — visión general", primary:true,
+ src:"GUÍA PARA EL INICIO DE DÍA.docx",
+ kw:["inicio de dia","inicio dia","iniciar el dia","arrancar el dia","empezar el dia","checklist inicio","proceso inicio","que hago en la mañana","rutina diaria","apertura"],
+ body:()=>`<p>El inicio de día tiene <b>dos partes</b>. La parte HOST se ejecuta primero; SaraWeb depende de que los seis JCL hayan terminado con <code>RC-0000</code>.</p>
+ <h4>Parte 1 — HOST (ROSCOC)</h4>
+ <ol class="chk">
+  <li><b>TOLDVINI</b> — actualiza la fecha de TOLD del día (STEP009)</li>
+  <li><b>MEPCE10</b> — actualiza fecha en MET07A y MEF31</li>
+  <li><b>SITBINI</b> — inicializa campos de TBF08 (agencias)</li>
+  <li><b>CVMED01</b> — registra tipo de cambio en CVF01 y CVF03 (fecha del día anterior)</li>
+  <li><b>RECAD07</b> — formatea tablas R20, R22, SM1 y DP8 (no se edita)</li>
+  <li><b>PDBSPILL</b> — depura el Log (no se edita)</li>
+ </ol>
+ <h4>Parte 2 — SaraWeb</h4>
+ <ul class="arrow">
+  <li>Ejecutar Fin de Día e Inicio de Día en los <b>4 servidores</b></li>
+  <li>Probar tipo de cambio con la <b>Tx 3840</b> (previa Tx 0710 en soles y dólares)</li>
+ </ul>
+ <div class="note"><b>Antes de empezar:</b> ingresa a emulación y luego a <code>ROSCOC</code>. Escribe <code>a d ctpct.s.reporte.carlos</code> para entrar al particionado con los JCL.</div>`,
+ fu:["¿Cómo ejecuto el TOLDVINI?","¿Cómo entro a ROSCOC?","Errores comunes del inicio de día","¿Cuáles son los 4 servidores de SaraWeb?"]
+},
+{
+ id:"02.1", mod:"02", title:"Acceso a emulación y ROSCOC",
+ src:"GUÍA PARA EL INICIO DE DÍA.docx · 09_Capacitación Emulación.pptx",
+ kw:["emulacion","emular","host on demand","como entro","ingresar","acceso host","roscoc","roscoe","bnrosa","tsoc","particionado carlos","logon","sesion","certi"],
+ body:()=>`<h4>Entornos disponibles en la emulación</h4>
+ <table><tbody>
+  <tr><td class="m">TSOC</td><td>Lo mismo que ROSCOC, y además CICS, logs y CPU</td></tr>
+  <tr><td class="m">CCICSAP</td><td>Tarjetas y aplicaciones</td></tr>
+  <tr><td class="m">CCICSTP</td><td>Cuentas — Core Bancario (TOLD)</td></tr>
+  <tr><td class="m">ROSCOC</td><td>Inicio del día: editar y ejecutar JCL</td></tr>
+ </tbody></table>
+ <h4>Rutas de ingreso</h4>
+ <ul class="arrow">
+  <li>Por emulación: presionar cualquier Certi -> escribir <code>roscoc</code> -> usuario y contraseña</li>
+  <li>Por Personal: escribir <code>bnrosa</code> -> usuario y contraseña</li>
+ </ul>
+ <p>Ya dentro, entra al particionado de trabajo:</p>
+ <p><code>a d ctpct.s.reporte.carlos</code></p>
+ <div class="note">Host On-Demand (IBM) es el emulador de terminal: permite acceder al mainframe del banco como si estuvieras frente a un terminal físico 3270.</div>`,
+ fu:["¿Qué comandos básicos tiene ROSCOE?","¿Cómo ejecuto un JCL?"]
+},
+{
+ id:"02.2", mod:"02", title:"TOLDVINI — actualizar fecha de TOLD",
+ src:"GUÍA PARA EL INICIO DE DÍA.docx",
+ kw:["toldvini","fecha told","step009","primer jcl","044900"],
+ body:()=>`<ol>
+  <li>Buscar el JCL: <code>n toldvini</code></li>
+  <li>Escribir <code>e</code> al costado del JCL para editarlo</li>
+  <li>Bajar con <kbd>F8</kbd> hasta la línea <code>044900</code></li>
+  <li>Colocar la fecha del día del inicio en formato <b>AñoMesDía</b> (se actualiza en el <b>STEP009</b>)</li>
+  <li>Escribir <code>sub</code> para ejecutar</li>
+  <li>Anotar el número de job y revisar el spool con <code>aj &lt;número&gt;</code> — ejemplo: <code>aj 6541</code></li>
+ </ol>
+ <p><b>Verificar:</b> <code>TOLDVINI ENDED RC-0000</code></p>
+ <h4>Errores</h4>
+ <table><tbody>
+  <tr><td class="m">STEP001</td><td>Posible problema: los VSAM no están en línea en el CICS <code>PCICSFOR</code>. <b>Debe reportarse para su revisión.</b></td></tr>
+  <tr><td class="m">STEP02</td><td>Un VSAM no existe o está corrupto: hay que crearlo o renombrarlo. Se reinicia el <b>CICSFOR</b> desde el TSO.</td></tr>
+ </tbody></table>`,
+ fu:["¿Cómo reinicio el CICSFOR?","¿Qué sigue después del TOLDVINI?"]
+},
+{
+ id:"02.3", mod:"02", title:"MEPCE10 — actualizar fecha en MET07A y MEF31",
+ src:"GUÍA PARA EL INICIO DE DÍA.docx · ERROR_manual_abrir_visa_MEPCE10.txt",
+ kw:["mepce10","met07a","mef31","monedas","tipofijo","segundo jcl","mepc4000","no actualiza fecha"],
+ body:()=>`<ol>
+  <li>Colocar la fecha del día del inicio en el <b>PARM</b> y en la <b>tarjeta</b> (líneas 17 y 22)</li>
+  <li>Cambiar el formato <code>/Día(Mes/Año/</code> y el campo <b>AñoMesDía</b></li>
+  <li>Ejecutar y revisar el spool: los 2 VSAM deben quedar leídos y actualizados</li>
+ </ol>
+ <p><b>Verificar:</b> <code>MEPCE10 ENDED RC-0000</code> y el display debajo de <code>INICIO - MEPC4000</code></p>
+ <div class="note"><b>Error frecuente:</b> el job termina OK pero las fechas no se actualizan. Causa: los VSAM están cerrados. Solución: abrirlos en el CICS <b>PCICSAP</b> y volver a ejecutar el job.
+ <ul class="arrow" style="margin-top:8px">
+  <li><code>CMECB.V.D2N.NOMBRES.MONEDAS.F31</code></li>
+  <li><code>CMEPC.V.D1D.TIPOFIJO.MET07A.F07</code></li>
+ </ul>
+ Consulta de estado: <code>CEMT I FILE(*) DSN(#VSAM)</code> — ejemplo: <code>CEMT I FILE(*) DSN(CMEPC.V.D1D.TIPOFIJO.MET07A.F07)</code></div>`,
+ fu:["¿Cómo abro un VSAM en el CICS?","Errores comunes del inicio de día"]
+},
+{
+ id:"02.4", mod:"02", title:"SITBINI — inicializar TBF08 (agencias)",
+ src:"GUÍA PARA EL INICIO DE DÍA.docx",
+ kw:["sitbini","tbf08","initbf08","agencias","tercer jcl"],
+ body:()=>`<ol>
+  <li>Colocar la fecha del inicio en el <b>PARM de los 3 steps</b></li>
+  <li>Formato a cambiar: <code>e '/DZ/MZ/AAAZ/'/09/01/2026/'</code></li>
+  <li>Ejecutar y revisar el spool</li>
+ </ol>
+ <p><b>Verificar:</b> el step <code>INITBF08</code> (inicializa archivo de agencias) y <code>SITBINI ENDED RC-0000</code></p>
+ <div class="note"><b>Error:</b> el job termina OK pero el display muestra <i>Error al abrir el VSAM TBF08</i>.
+ <ul class="arrow" style="margin-top:8px">
+  <li>Ejecutar nuevamente el job y verificar el display del step</li>
+  <li>Si el mensaje persiste: cerrar en el <b>TP</b> el VSAM <code>CSITB.V.D1N.AGENCIAS.TBF08.F08</code> y volver a ejecutar</li>
+ </ul></div>`,
+ fu:["¿Qué sigue después del SITBINI?"]
+},
+{
+ id:"02.5", mod:"02", title:"CVMED01 — registrar tipo de cambio",
+ src:"GUÍA PARA EL INICIO DE DÍA.docx",
+ kw:["cvmed01","tipo de cambio","cvf01","cvf03","cv1","cz29","step0201","cvme3015","fecha anterior","tabla cv1","base 090"],
+ body:()=>`<p>Registra la nueva fecha de tipo de cambio en los VSAM <b>CVF01</b> y <b>CVF03</b>.</p>
+ <div class="note"><b>Ojo con la fecha:</b> en este JCL se coloca la fecha del <b>día anterior</b> al del inicio. Si el inicio es del 25/10, en el PARM va 24/10.</div>
+ <ol>
+  <li>Editar el PARM: <code>e '/DZ/MZ/AAAZ/'/&lt;fecha día anterior&gt;/'</code></li>
+  <li>Ejecutar y revisar el spool en los steps <code>STEP0201</code> y <code>CVME3015</code></li>
+  <li>Salir de todo con <code>off</code></li>
+ </ol>
+ <h4>Verificación en el CICSTP</h4>
+ <p>Ingresar: por Personal <code>DBDCCICS</code> · por Emulación <code>CCICSTP</code></p>
+ <ul class="arrow">
+  <li><b>Tabla CV1 (Base 090):</b> escribir <code>CZ29</code> -> Nombre de Tabla <code>CV1</code> -> <kbd>F3</kbd> -> KEY con fecha cercana, ej. <code>USD 20260425</code>. Debe salir la fecha de hoy.</li>
+  <li><b>VSAM CVF01:</b> escribir <code>CZ29</code> -> DATASET <code>CVF01</code> -> KEY <code>USD AñoMesDía</code>. Debe salir la fecha de hoy.</li>
+ </ul>`,
+ fu:["¿Cómo pruebo el tipo de cambio en SaraWeb?"]
+},
+{
+ id:"02.6", mod:"02", title:"RECAD07 y PDBSPILL — últimos dos jobs",
+ src:"GUÍA PARA EL INICIO DE DÍA.docx",
+ kw:["recad07","pdbspill","r20","r22","sm1","dp8","tandem","depurar log","ultimos jcl"],
+ body:()=>`<h4>RECAD07</h4>
+ <p>Formatea las tablas <b>R20</b> y <b>R22</b> de la Base 70 (movimiento recaudación SUNAT y documentos de pago), la <b>SM1</b> Base 251 (log de movimientos de ahorros MN 24x7) y la <b>DP8</b> Base 024 (movimientos Tandem).</p>
+ <ul class="arrow"><li>No se edita ningún campo: solo se ejecuta</li></ul>
+ <h4>PDBSPILL</h4>
+ <p>Depura el Log. Tampoco se edita nada.</p>
+ <ul class="arrow"><li>Revisar que el job haya culminado correctamente</li></ul>`,
+ fu:["¿Cómo continúo con la parte de SaraWeb?"]
+},
+{
+ id:"02.7", mod:"02", title:"SaraWeb — inicio de día en los 4 servidores",
+ src:"GUÍA PARA EL INICIO DE DÍA.docx",
+ kw:["saraweb inicio","servidores saraweb","calidad01p","calidad02b","certifica01p","certifica02b","ventanilla","0111","fin de dia","beginservlet","parte sara"],
+ body:()=>`<table><thead><tr><th>Servidor</th><th>Enlace</th><th>IP</th></tr></thead><tbody>
+  <tr><td class="m">1º</td><td><a href="http://calidad01p:8080/sarawebbranchserver/admin/inicio.html" target="_blank" rel="noopener">calidad01p:8080/…/admin/inicio.html</a></td><td class="m">10.1.106.30</td></tr>
+  <tr><td class="m">2º</td><td><a href="http://calidad02b:8080/sarawebbranchserver/BeginServlet" target="_blank" rel="noopener">calidad02b:8080/…/BeginServlet</a></td><td class="m">10.1.20.70</td></tr>
+  <tr><td class="m">3º</td><td><a href="http://certifica01p:8080/sarawebbranchserver/BeginServlet" target="_blank" rel="noopener">certifica01p:8080/…/BeginServlet</a></td><td class="m">10.1.20.71</td></tr>
+  <tr><td class="m">4º</td><td><a href="http://certifica02b:8080/sarawebbranchserver/BeginServlet" target="_blank" rel="noopener">certifica02b:8080/…/BeginServlet</a></td><td class="m">10.1.20.21</td></tr>
+ </tbody></table>
+ <h4>Pasos en cada uno de los 4 servidores</h4>
+ <ol>
+  <li>Ingresar a ventanilla — <code>0111</code></li>
+  <li>Clic en <b>Inicio de Día</b></li>
+  <li>Loguearse (usuario <code>1110013</code>)</li>
+  <li>Seleccionar <b>Fin de Día</b> -> Aceptar -> Regresar</li>
+  <li>Seleccionar <b>Inicio de Día</b> -> Aceptar -> Aceptar</li>
+  <li>Cerrar sesión</li>
+ </ol>
+ <h4>Prueba de tipo de cambio</h4>
+ <ul class="arrow">
+  <li>Previo: <b>Tx 0710</b> en soles y dólares (ingresar dinero a cajero)</li>
+  <li>Ejecutar <b>Tx 3840</b> — Compra M.E. Debe mostrar <i>Transacción realizada con éxito</i></li>
+ </ul>
+ <div class="note"><b>Si sale "Error de Base de Datos" en la Tx 3840:</b> ejecutar el JCL <code>ABREBASE</code> (AWS P74) y abrir en todos los CICS las bases <b>40, 41, 70, 71, 90, 91, 100 y 120</b>. Luego reintentar la Tx 3840.</div>`,
+ fu:["¿Cómo reinicio los CICS TP, TP1 y TP2?","¿Cómo levanto el TOLD?"]
+},
+{
+ id:"02.8", mod:"02", title:"Errores comunes del inicio de día",
+ src:"GUÍA PARA EL INICIO DE DÍA.docx · CASO_ERROR",
+ kw:["errores comunes","error inicio","fallo inicio","no actualiza","problema inicio de dia","que hago si falla","abend inicio"],
+ body:()=>`<table><thead><tr><th>Síntoma</th><th>Acción documentada</th></tr></thead><tbody>
+  <tr><td>TOLDVINI falla en <b>STEP001</b></td><td>VSAM posiblemente fuera de línea en <code>PCICSFOR</code>. <b>Reportar para revisión.</b></td></tr>
+  <tr><td>TOLDVINI falla en <b>STEP02</b></td><td>VSAM inexistente o corrupto. Crear o renombrar, y reiniciar el <b>CICSFOR</b> desde el TSO.</td></tr>
+  <tr><td>MEPCE10 termina OK pero no actualiza fechas</td><td>VSAM cerrados. Abrir en <code>PCICSAP</code>: <code>CMECB.V.D2N.NOMBRES.MONEDAS.F31</code> y <code>CMEPC.V.D1D.TIPOFIJO.MET07A.F07</code>. Reejecutar.</td></tr>
+  <tr><td>SITBINI: "Error en abrir el VSAM TBF08"</td><td>Reejecutar el job. Si persiste, cerrar en el TP <code>CSITB.V.D1N.AGENCIAS.TBF08.F08</code> y volver a ejecutar.</td></tr>
+  <tr><td>Tx 3840 en SaraWeb: "Error de Base de Datos"</td><td>Ejecutar <code>ABREBASE</code> (AWS P74) y abrir bases 40, 41, 70, 71, 90, 91, 100, 120 en todos los CICS.</td></tr>
+ </tbody></table>`,
+ fu:["¿Cómo reinicio el CICSFOR?","¿Cómo reinicio los TP?"]
+},
+
+/* ================= 03 CANALES ================= */
+{
+ id:"03.1", mod:"03", title:"Canales de prueba", primary:true,
+ src:"03_Canales.txt · Chat Bot Plan.docx",
+ kw:["canales","canal","bduc","multired","izipay","pos","pagalo","atm","cajero","apk","app banco","aplicativos","donde se prueba","sotano 4","ssh secure shell"],
+ body:()=>`<p>Estos son los canales donde se ejecutan las pruebas. Se verifica su funcionalidad <b>todos los días, después del inicio de día</b>.</p>
+ <ul class="arrow">
+  <li><b>BDUC</b> — Base de Datos Única de Clientes (accesos principales y espejos)</li>
+  <li><b>Multired Virtual</b> — tarjeta (por enlace)</li>
+  <li><b>App</b> — versión de pruebas del Banco de la Nación (<code>.apk</code>)</li>
+  <li><b>POS Izipay</b></li>
+  <li><b>Pagalo.pe</b></li>
+  <li><b>ATM</b> — sótano 4 y SSH Secure Shell Client</li>
+  <li><b>SaraWeb</b></li>
+ </ul>
+ <div class="note"><b>Protocolo ante caída de cada canal:</b> ${GUARDRAIL}</div>`,
+ fu:["Muéstrame los enlaces de cada canal","¿Qué aplicativos existen en el área?"]
+},
+{
+ id:"03.2", mod:"03", title:"Aplicativos del área",
+ src:"lista de aplicativos.txt",
+ kw:["lista de aplicativos","aplicativos","sistemas","herramientas","joomla","openshift","ivanti","guia telefonica","portal interno","personal","winscp","admin tarjetas"],
+ body:()=>`<ul class="arrow">
+  <li>Portal Interno BN · Guía Telefónica BN · Gente BN</li>
+  <li>BDUC (accesos principales y espejos)</li>
+  <li>Joomla! Spanish Certi</li>
+  <li>Sistema de Administración de Tarjetas</li>
+  <li>SARAWEB (links de inicio de día) y SARAWEB aplicativo</li>
+  <li>COMP (Oracle 12c) — parámetros globales · Oracle viejo y nuevo</li>
+  <li>Págalo / WebSphere Integrated Solutions Console</li>
+  <li>ClearQuest (CQ) — seguimiento de mantenimientos</li>
+  <li>Red Hat OpenShift · MultiRed Virtual · IVANTI</li>
+  <li>Emulación · Personal · App · WinSCP · SSH Secure Shell Client</li>
+ </ul>`,
+ fu:["Muéstrame los enlaces de certificación"]
+},
+
+{
+ id:"03.3", mod:"03", title:"Canales de comunicación interna",
+ src:"Especificación del asistente (reglas de comportamiento)",
+ kw:["canales de comunicacion","comunicacion","slack","qa general","qa incidencias","qa automatizacion","qa coordinacion","qa alertas","incidencias","automatizacion","coordinacion","alertas","donde reporto","a quien aviso","grupo","chat interno"],
+ body:()=>`<ul class="arrow">
+  <li><code>#qa-general</code> — comunicaciones generales</li>
+  <li><code>#qa-incidencias</code> — reporte de bugs urgentes</li>
+  <li><code>#qa-automatizacion</code> — CI/CD y scripts</li>
+  <li><code>#qa-coordinacion</code> — coordinación con Desarrollo</li>
+  <li><code>#qa-alertas</code> — alertas automáticas de sistemas</li>
+ </ul>
+ <p class="hint">Registrado en la especificación del asistente. No aparece en los archivos del repositorio técnico.</p>`,
+ fu:["¿Qué canales de prueba se verifican?","¿Cómo registro un incidente?"]
+},
+
+/* ================= 04 CLEARQUEST ================= */
+{
+ id:"04.1", mod:"04", title:"ClearQuest — etapas y entregables", primary:true,
+ src:"04_PlantillasCQ/",
+ kw:["clearquest","clear quest","cq","documentacion","etapas","revision","diseño","despliegue","ejecucion","plantillas","entregables","mantenimiento","irpf","rc","dcp","iar","crg","checklist"],
+ body:()=>`<p>El proceso de certificación tiene 4 etapas. Estas son las plantillas registradas en el repositorio:</p>
+ <table><thead><tr><th>Etapa</th><th>Documentos disponibles</th></tr></thead><tbody>
+  <tr><td><b>Revisión</b></td><td><code>202X-XXXXX - Checklist.docx</code><br><code>CRG_202X_XXXXX.xlsx</code><br><span class="hint">Ejemplo: 2025-M0770</span></td></tr>
+  <tr><td><b>Diseño</b></td><td><code>DCP_20XX-MXXXX.xlsx</code> — Diseño de Casos de Prueba<br><code>IAR_20XX-MXXXX.docx</code> — Informe de Análisis de Requerimiento<br><span class="hint">Ejemplo: 2026-M0228</span></td></tr>
+  <tr><td><b>Ejecución / Actas</b></td><td><code>Modelo - Revisión Conjunta (RC).docx</code><br><code>Modelo - Informe de Resultados de Pruebas Funcionales (IRPF).docx</code><br><span class="hint">Ejemplos: RC_2026-M0102, IRPF_2024-M0175</span></td></tr>
+  <tr><td><b>Despliegue</b></td><td>Sin plantillas registradas en el repositorio actual</td></tr>
+ </tbody></table>
+ <div class="note"><b>Proceso general de CQ paso a paso:</b> ${GUARDRAIL}<br><span class="hint">El archivo CQ.docx del repositorio está vacío (0 KB).</span></div>`,
+ fu:["¿Qué contiene el checklist de mantenimiento?"]
+},
+{
+ id:"04.2", mod:"04", title:"Checklist de mantenimiento — control de entregables",
+ src:"202X-XXXXX - Checklist.docx",
+ kw:["checklist","check list","entregables","rds","ecu","ecp","acta de certificacion","orden de proceso","formato de control","solicitud de cambios","datos generales"],
+ body:()=>`<p>Formato <code>REV – 1 - 0001</code> de la Sección de Control de Calidad.</p>
+ <h4>Datos generales</h4>
+ <ul class="arrow"><li>Proyecto</li><li>N° del mantenimiento</li><li>Gestor QA BN</li><li>Jefe de desarrollo</li><li>Analista de desarrollo</li></ul>
+ <h4>Control de entregables</h4>
+ <ol class="chk">
+  <li>Requerimiento de Software (RDS – Anexo 2)</li>
+  <li>Solicitud de Cambios / Defectos</li>
+  <li>Especificaciones de Casos de Uso (ECU)</li>
+  <li>Especificaciones de Casos de Prueba (ECP)</li>
+  <li>Resultados de Pruebas (evidencias y acta de conformidad de desarrollo)</li>
+  <li>Acta de Certificación (RC y RPF)</li>
+  <li>Actas de Aceptación y Cierre de Proyecto</li>
+  <li>Orden de Proceso <span class="hint">— se solicita al área de desarrollo</span></li>
+  <li>Formato de Control - M</li>
+ </ol>
+ <p>Cada ítem se marca como <b>Sí / No / No aplica</b>, con columna de comentarios.</p>`,
+ fu:["¿Qué plantillas hay por etapa?"]
+},
+
+/* ================= 05 PROCEDIMIENTOS ================= */
+{
+ id:"05.1", mod:"05", title:"Compare y Merge",
+ src:"09_Capacitación Emulación.pptx",
+ kw:["compare","merge","cermerge","compa","comparar","master","certificacion master","tcert","librerias master","pasar a master"],
+ body:()=>`<h4>Librerías de la master de certificación</h4>
+ <ul class="arrow">
+  <li><code>a d cert.prod.master.jcl</code></li>
+  <li><code>a d cert.prod.master.batch</code></li>
+  <li><code>a d cert.prod.master.cics</code></li>
+  <li><code>a d cert.prod.master.mapas</code></li>
+  <li><code>a d cert.prod.master.tda</code></li>
+ </ul>
+ <h4>Librerías TCERT (desarrollo hacia la master)</h4>
+ <ul class="arrow">
+  <li><code>a d tcert.desa.master.jcl</code></li>
+  <li><code>a d tcert.desa.master.batch</code></li>
+  <li><code>a d tcert.desa.master.cics</code></li>
+  <li><code>a d tcert.desa.master.mapas</code></li>
+  <li><code>a d tcert.desa.master.tda</code></li>
+ </ul>
+ <h4>Operaciones</h4>
+ <ul class="arrow">
+  <li>Compare: <code>compa</code></li>
+  <li>Merge: <code>cermerge</code></li>
+  <li>Entrar a la propia librería: <code>a l +</code></li>
+  <li>Entrar a la librería de otro usuario: <code>a p42.+</code></li>
+ </ul>`,
+ fu:["¿Dónde están las librerías de calidad?","¿Cómo edito un JCL?"]
+},
+{
+ id:"05.2", mod:"05", title:"CLKY — usuarios, claves y permisos",
+ src:"07_Guía ROSCOE.docx",
+ kw:["clky","crear usuario","usuarios","permisos","clave","contraseña","password","resetear clave","actualizar clave","perfil rje","administracion de usuarios","poem consulta","bace","desbloquear usuario"],
+ body:()=>`<p>El perfil RJE (CLKY) contiene permisos de acceso, bibliotecas por defecto, preferencias de visualización, parámetros de ejecución y configuración de terminal.</p>
+ <h4>Ingresar al CLKY</h4>
+ <ol>
+  <li>Ingresar con usuario y contraseña autorizados <span class="hint">(consultar con el monitor)</span></li>
+  <li>Entrar a <code>CCISCTP</code></li>
+  <li>Escribir <code>CLKY</code></li>
+  <li>Ingresar usuario y contraseña del CLKY</li>
+ </ol>
+ <h4>Consultar un usuario</h4>
+ <ul class="arrow">
+  <li>Opción <b>1</b> — Administración de usuarios, luego <kbd>FP1</kbd></li>
+  <li>Escribir el código de usuario (ej. <code>SVAK</code>) y <kbd>F3</kbd></li>
+  <li>Para salir: <kbd>AP2</kbd></li>
+ </ul>
+ <h4>Actualizar clave</h4>
+ <ul class="arrow">
+  <li>Opción <b>7</b> — inicializar la clave de autorización con el código de usuario y <kbd>F2</kbd> para grabar</li>
+  <li>Nueva contraseña: ingresar el código de usuario -> Enter -> repetir el código -> escribir la nueva contraseña -> <kbd>PF2</kbd></li>
+ </ul>
+ <h4>Consulta de usuarios por aplicación</h4>
+ <ul class="arrow"><li>Menú principal -> opción <b>5</b> -> subconsulta <b>6</b> -> escribir la aplicación (ej. <code>POEM</code>) -> Enter</li></ul>`,
+ fu:["¿Qué es el perfil RJE?","¿Qué teclas 3270 se usan?"]
+},
+
+/* ================= 06 REINICIOS ================= */
+{
+ id:"06.1", mod:"06", title:"Regiones CICS: TOR, AOR y FOR", primary:true,
+ src:"09_Capacitación Emulación.pptx · Chat Bot Plan.docx",
+ kw:["regiones","region cics","tor","aor","for","tipos de cics","dosificacion","que es aor","que es tor","que es for"],
+ body:()=>`<table><thead><tr><th>Región</th><th>Propietaria de</th><th>Función</th></tr></thead><tbody>
+  <tr><td class="m">TOR</td><td>Terminales</td><td>Se comunican con los canales</td></tr>
+  <tr><td class="m">AOR</td><td>Aplicaciones</td><td>Ejecutan la lógica de negocio: TOLD, TP, TP1, AP</td></tr>
+  <tr><td class="m">FOR</td><td>Archivos</td><td>Apertura de archivos VSAM</td></tr>
+ </tbody></table>
+ <p>El CICS es un subsistema del mainframe; se definen varios tipos según la necesidad y complejidad del sistema.</p>`,
+ fu:["¿Cómo reinicio el CICSFOR?","¿Cómo reinicio los TP?","¿Qué transacciones tiene el CCICSAP?"]
+},
+{
+ id:"06.2", mod:"06", title:"Reiniciar el CCICSFOR",
+ src:"GUÍA PARA EL INICIO DE DÍA.docx",
+ kw:["reiniciar cicsfor","ccicsfor","bajar cics","subir cics","cemt p shut","sd.st","pre cic","jesmsglg","tareas pendientes","execution","reinicio for"],
+ body:()=>`<ol>
+  <li>Entrar al <b>TSO</b> (por emulación o por Personal) e ingresar credenciales</li>
+  <li>Escribir <code>sd.st</code></li>
+  <li>Listar todos los CICS: <code>pre *cic*</code></li>
+  <li>Bajar el CICS: <code>cemt p shut i</code>. Si no funciona, bajarlo forzado: <code>/c ccicsfor</code></li>
+  <li>Subir el CICS: <code>/s ccicsfor</code> — verificar que el QUEUE de CCICSFOR diga <b>EXECUTION</b></li>
+  <li>Doble Enter</li>
+  <li>Escribir <code>?</code> al frente del CCICSFOR</li>
+  <li>Escribir <code>s</code> frente a <code>JESMSGLG</code></li>
+  <li>Escribir <code>bot</code> para ir al fondo</li>
+  <li>Eliminar tareas pendientes: <code>/&lt;número&gt;,go</code> — ejemplo: <code>/36,go</code></li>
+ </ol>`,
+ fu:["¿Cómo reinicio los TP, TP1 y TP2?","¿Qué es la región FOR?"]
+},
+{
+ id:"06.3", mod:"06", title:"Reiniciar CICS TP, TP1 y TP2 + levantar TOLD",
+ src:"GUÍA PARA EL INICIO DE DÍA.docx",
+ kw:["reiniciar tp","ccicstp","ccicstp1","ccicstp2","cold","levantar told","subida de sistema","dg00","administrador de recursos","dbdccics","dbdccic1","dbdccic2","given","consulta estado sistema","bajar tp"],
+ body:()=>`<h4>1. Bajar y subir los CICS desde el TSO</h4>
+ <p>Ingresar al TSO (Personal: <code>TSO</code> · Emulación: <code>LOGON APPLID(TSO)</code>), luego <code>SD.ST</code> y <code>PRE *CIC*</code>.</p>
+ <table><thead><tr><th>Acción</th><th>Comando</th></tr></thead><tbody>
+  <tr><td>Bajar TP</td><td class="m">/C CCICSTP</td></tr>
+  <tr><td>Bajar TP1</td><td class="m">/C CCICSTP1</td></tr>
+  <tr><td>Bajar TP2</td><td class="m">/C CCICSTP2</td></tr>
+  <tr><td>Levantar TP</td><td class="m">/S CCICSTP,M=COLD</td></tr>
+  <tr><td>Levantar TP1</td><td class="m">/S CCICSTP1</td></tr>
+  <tr><td>Levantar TP2</td><td class="m">/S CCICSTP2</td></tr>
+ </tbody></table>
+ <div class="note"><b>Confirmaciones pendientes:</b> en los 3 TP hay tareas que piden confirmación (aparecen con <code>@</code> y un número).
+ <ol style="margin:8px 0 0">
+  <li><code>?</code> al lado del CICS -> <code>S</code> al lado de <code>JESMSGLG</code></li>
+  <li>Ir al final con <code>BOT</code> (o tecla M + <kbd>F8</kbd>) y buscar <code>@</code></li>
+  <li>Eliminar con <code>/&lt;número&gt;,go</code> — ejemplo <code>/82,go</code></li>
+  <li>Verificar con <code>f GIVEN</code>: si aparece <i>Control is being given to CICS</i>, ya no hay pendientes</li>
+ </ol>
+ A veces el nuevo <code>@</code> demora: dale varias veces Enter.</div>
+ <h4>2. Levantar el TOLD en TP, TP1 y TP2</h4>
+ <table><thead><tr><th>CICS</th><th>Por Personal</th><th>Por Emulación</th></tr></thead><tbody>
+  <tr><td class="m">CICSTP</td><td class="m">DBDCCICS</td><td class="m">CCICSTP</td></tr>
+  <tr><td class="m">CICSTP1</td><td class="m">DBDCCIC1</td><td class="m">LOGON APPLID(DBDCCIC1)</td></tr>
+  <tr><td class="m">CICSTP2</td><td class="m">DBDCCIC2</td><td class="m">LOGON APPLID(DBDCCIC2)</td></tr>
+ </tbody></table>
+ <ul class="arrow">
+  <li>En cada CICS escribir la tx <code>DG00</code> y Enter</li>
+  <li>Marcar <b>Administrador de Recursos</b> y Enter</li>
+  <li>Marcar <b>Subida de Sistema</b> y <kbd>F4</kbd></li>
+  <li>Verificar con <b>Consulta Estado Sistema</b>: la <i>Fecha Actual</i> y la <i>Start Up en Fecha</i> deben coincidir</li>
+ </ul>
+ <p class="hint">DBDCCIC1 corresponde a Agentes Corresponsales.</p>`,
+ fu:["¿Cómo abro las bases con ABREBASE?","¿Qué es la región AOR?"]
+},
+{
+ id:"06.4", mod:"06", title:"ABREBASE — abrir bases en todos los CICS",
+ src:"GUÍA PARA EL INICIO DE DÍA.docx",
+ kw:["abrebase","abrir bases","p74","error de base de datos","3840 error","bases 40 41 70"],
+ body:()=>`<p>Se usa cuando la <b>Tx 3840</b> en SaraWeb devuelve <i>Error de Base de Datos</i>.</p>
+ <ul class="arrow">
+  <li>Ejecutar el JCL <code>ABREBASE</code> (AWS P74)</li>
+  <li>Abrir en <b>todos los CICS</b> las bases: <code>40</code>, <code>41</code>, <code>70</code>, <code>71</code>, <code>90</code>, <code>91</code>, <code>100</code>, <code>120</code></li>
+  <li>Reintentar la Tx 3840: debe finalizar con éxito</li>
+ </ul>`,
+ fu:["¿Cómo reinicio los TP?"]
+},
+{
+ id:"06.5", mod:"06", title:"Caída de BDUC, Págalo o App",
+ src:"—",
+ kw:["se cayo bduc","cayo pagalo","cayo la app","caida de servicio","servicio caido","que reinicio si se cae","protocolo caida","no responde bduc","dosificacion de servicios"],
+ body:()=>`<div class="note"><b>${GUARDRAIL}</b></div>
+ <p>El repositorio actual documenta reinicios de <b>CICS</b> (FOR, TP/TP1/TP2) y la apertura de bases con ABREBASE, pero no el mapeo de qué servicio reiniciar ante la caída de BDUC, Págalo o la App.</p>`,
+ fu:["¿Cómo reinicio el CICSFOR?","¿Cómo reinicio los TP?"]
+},
+
+/* ================= 07 HOST ================= */
+{
+ id:"07.1", mod:"07", title:"ROSCOE / RJE — fundamentos y términos", primary:true,
+ src:"07_Guía ROSCOE.docx",
+ kw:["roscoe","rje","que es roscoe","aws","active work space","acid","savaws","prefijo","miembro","member","dataset","biblioteca","jcl que es","job","attach job monitor","modo nativo","terminos"],
+ body:()=>`<p><b>ROSCOE</b> (Remote Operating System Conversational Environment) permite acceder y gestionar recursos del mainframe. Con <b>RJE</b> (Remote Job Entry) se envían jobs, se monitorea su ejecución y se consultan resultados.</p>
+ <table><thead><tr><th>Término</th><th>Descripción</th></tr></thead><tbody>
+  <tr><td class="m">AWS</td><td>Active Work Space: área de trabajo <b>temporal</b> que se abre al iniciar sesión. Máximo 4000 líneas. Lo que solo está en el AWS se pierde si no se guarda.</td></tr>
+  <tr><td class="m">Miembro</td><td>Archivo individual dentro de una biblioteca particionada: datos, programas, JCL o texto. El nombre debe empezar con letra.</td></tr>
+  <tr><td class="m">JCL</td><td>Job Control Language: define trabajos y recursos.</td></tr>
+  <tr><td class="m">ACID</td><td>Accessor ID: tu identificador de usuario (normalmente el mismo de CICS).</td></tr>
+  <tr><td class="m">SAVAWS</td><td>Seguridad: al cerrar una pantalla dividida con datos o si el sistema cae, ROSCOE guarda el AWS como SAVAWS01…SAVAWS99.</td></tr>
+  <tr><td class="m">Prefijo</td><td>Identificador de cuenta ROSCOE. Sirve para traer miembros compartidos, ej. <code>F LU.ROSCTST2</code>.</td></tr>
+  <tr><td class="m">Modo nativo</td><td>Comandos directos fuera de los menús RJE. Se entra presionando <kbd>CLEAR</kbd>.</td></tr>
+ </tbody></table>
+ <h4>Estados de un job</h4>
+ <ul class="arrow"><li><b>Input</b> — en cola</li><li><b>Active</b> — en ejecución</li><li><b>Output</b> — finalizado correctamente</li><li><b>Abend</b> — finalizado con error</li></ul>`,
+ fu:["¿Cuáles son los comandos de modo nativo?","¿Cómo ejecuto un JCL?","¿Qué son los line commands?"]
+},
+{
+ id:"07.2", mod:"07", title:"Comandos de modo nativo",
+ src:"07_Guía ROSCOE.docx",
+ kw:["comandos nativos","fetch","attach","save","update","del","set display numx","copy","traer miembro","guardar miembro","comandos basicos host","comandos roscoe"],
+ body:()=>`<p>Se escriben en el área de comandos, en la parte superior. Para usarlos hay que salir de RJE con <kbd>CLEAR</kbd>.</p>
+ <table><thead><tr><th>Comando</th><th>Para qué sirve</th></tr></thead><tbody>
+  <tr><td class="m">F (FETCH)</td><td>Trae una copia de un miembro al AWS. Ej. <code>F ROSLAB1</code>. Con prefijo trae compartidos: <code>F LU.ROSCTST2</code> (solo si el miembro es 'S' Shared).</td></tr>
+  <tr><td class="m">A (ATTACH)</td><td>Muestra el contenido del AWS. También reposiciona: <code>A 18,,</code> muestra desde la línea 18; <code>A 1,,</code> vuelve al inicio.</td></tr>
+  <tr><td class="m">&amp;</td><td>Encadena dos comandos: <code>F LU.ROSCTST2 &amp; A</code></td></tr>
+  <tr><td class="m">S (SAVE)</td><td>Guarda el AWS como miembro <b>nuevo</b>. Ej. <code>S ROSLAB2 /2ND ROSCOE EXERCISE/</code> — el texto entre barras queda como descripción.</td></tr>
+  <tr><td class="m">U (UPDATE)</td><td>Actualiza un miembro <b>existente</b>. Ej. <code>U ROSLAB2</code>. Con <code>U *</code> actualiza el miembro mostrado.</td></tr>
+  <tr><td class="m">DEL</td><td>Vacía el AWS (no borra el miembro guardado).</td></tr>
+  <tr><td class="m">SET DISPLAY NUMX</td><td>Permite escribir sobre los números de línea para usar line commands.</td></tr>
+  <tr><td class="m">COPY</td><td>Copia líneas de un miembro a otro usando números de línea.</td></tr>
+ </tbody></table>
+ <h4>Otros comandos de edición</h4>
+ <table><tbody>
+  <tr><td class="m">e 'preca'creca'</td><td>Editar / reemplazar texto</td></tr>
+  <tr><td class="m">save recad00</td><td>Guardar</td></tr>
+  <tr><td class="m">u*</td><td>Guardar sobre una modificación</td></tr>
+  <tr><td class="m">r 1 1</td><td>Ordenar líneas</td></tr>
+  <tr><td class="m">i5</td><td>Agregar 5 líneas</td></tr>
+  <tr><td class="m">r2</td><td>Agregar 2 líneas copiadas</td></tr>
+  <tr><td class="m">d / dd / db</td><td>Eliminar línea / bloque / desde el punto hasta el final</td></tr>
+  <tr><td class="m">lc</td><td>Cambiar toda la línea a minúscula</td></tr>
+  <tr><td class="m">set mode x / set mode b</td><td>Escribir en minúscula / mayúscula</td></tr>
+ </tbody></table>
+ <div class="note">Antes de <kbd>PF6</kbd>: guarda con SAVE o UPDATE, o vacía el AWS con DEL, para no generar miembros SAVAWS innecesarios.</div>`,
+ fu:["¿Qué son los line commands?","¿Cómo ejecuto un JCL?"]
+},
+{
+ id:"07.3", mod:"07", title:"Line commands y teclas de función",
+ src:"07_Guía ROSCOE.docx",
+ kw:["line commands","comandos de linea","insertar linea","copiar linea","mover linea","borrar linea","cc","mm","dd","destinos","tt","bb","teclas pf","3270","f8","f3","teclas de funcion","pantalla dividida","split"],
+ body:()=>`<h4>Line commands</h4>
+ <table><thead><tr><th>Cmd</th><th>Acción</th></tr></thead><tbody>
+  <tr><td class="m">I</td><td>Insertar línea en blanco debajo del cursor. <code>I2</code>, <code>I5</code>, <code>I10</code> abren varias. Si no escribes nada, ROSCOE la cierra sola.</td></tr>
+  <tr><td class="m">C / CC…CC</td><td>Copiar una línea / un bloque contiguo, más el destino</td></tr>
+  <tr><td class="m">M / MM…MM</td><td>Mover una línea / un bloque</td></tr>
+  <tr><td class="m">D / DD…DD</td><td>Borrar una línea / un bloque</td></tr>
+  <tr><td class="m">E / B / R</td><td>Editar / examinar / renombrar un miembro</td></tr>
+ </tbody></table>
+ <h4>Destinos para copiar o mover</h4>
+ <table><tbody>
+  <tr><td class="m">A</td><td>After — después de esta línea</td></tr>
+  <tr><td class="m">B</td><td>Before — antes de esta línea</td></tr>
+  <tr><td class="m">TT</td><td>Al inicio del AWS</td></tr>
+  <tr><td class="m">BB</td><td>Al final del AWS</td></tr>
+ </tbody></table>
+ <div class="note">Los cambios solo afectan la copia en tu AWS. Para conservarlos usa SAVE (miembro nuevo) o UPDATE (existente). <b>No puedes actualizar miembros de la biblioteca de otra cuenta:</b> guárdalos como miembro nuevo en la tuya.</div>
+ <h4>Teclas PF en modo nativo y edición</h4>
+ <table><tbody>
+  <tr><td class="m">PF1</td><td>Avanzar una página</td></tr>
+  <tr><td class="m">PF2</td><td>Retroceder una página</td></tr>
+  <tr><td class="m">PF3</td><td>Dividir la pantalla en dos AWS (split screen)</td></tr>
+  <tr><td class="m">PF4</td><td>Ir al final (BOTTOM)</td></tr>
+  <tr><td class="m">PF5</td><td>Ir al inicio (TOP)</td></tr>
+  <tr><td class="m">PF6</td><td>Salir de la pantalla dividida (guarda como SAVAWS si no está vacío)</td></tr>
+ </tbody></table>
+ <p class="hint">Las teclas PF cambian según dónde estés: al editar, PF1 avanza página; en el menú RJE, PF1 entra a INPUT/REVISE.</p>
+ <h4>Teclas 3270 generales</h4>
+ <ul class="arrow"><li>PF1 ayuda · PF3 salir o regresar · PF7 subir · PF8 bajar · PF9 intercambiar pantallas · PF12 cancelar · Enter confirmar</li></ul>`,
+ fu:["¿Cómo ejecuto un JCL?","¿Qué es el AWS?"]
+},
+{
+ id:"07.4", mod:"07", title:"Ejecutar y consultar un JCL",
+ src:"07_Guía ROSCOE.docx · 09_Capacitación Emulación.pptx",
+ kw:["ejecutar jcl","como ejecuto","sub","submit","aj","spool","dis a","dis","job monitor","monitorear job","ver salida","numero de job","estado del job","enviar job"],
+ body:()=>`<h4>Flujo</h4>
+ <ol>
+  <li>Crear o modificar el JCL</li>
+  <li>Validar parámetros y recursos</li>
+  <li>Enviar el job: <code>sub</code></li>
+  <li>Anotar el número de job que devuelve</li>
+  <li>Consultar el resultado en el spool: <code>aj &lt;número&gt;</code> — ejemplo <code>aj 92157</code></li>
+ </ol>
+ <h4>Consultas</h4>
+ <table><tbody>
+  <tr><td class="m">dis a</td><td>Lista todos los jobs en ejecución</td></tr>
+  <tr><td class="m">dis recad00</td><td>Lista un job específico</td></tr>
+  <tr><td class="m">aj 92157</td><td>Muestra el detalle de la ejecución</td></tr>
+  <tr><td class="m">n &lt;nombre&gt;</td><td>Buscar el JCL; luego <code>e</code> al costado para editarlo</td></tr>
+ </tbody></table>
+ <p><b>Attach Job Monitor</b> permite asociarse a un job en ejecución para verificar su estado, detectar bloqueos, revisar mensajes del sistema y analizar consumo de recursos.</p>`,
+ fu:["¿Qué comandos de edición hay?","¿Dónde están las librerías de calidad?"]
+},
+{
+ id:"07.5", mod:"07", title:"Librerías de calidad",
+ src:"09_Capacitación Emulación.pptx · 07_Guía ROSCOE.docx",
+ kw:["librerias","libreria de calidad","particionado","biblioteca","donde guardo","master","cert.prod","tcert.desa","a l +","entrar libreria","crear particionado"],
+ body:()=>`<p>Una biblioteca es un conjunto organizado de <b>datasets</b> con programas, JCL, procedimientos y configuraciones. Los entornos se mantienen separados: <b>desarrollo</b>, <b>certificación / pruebas</b> y <b>producción</b>.</p>
+ <h4>Rutas registradas</h4>
+ <ul class="arrow">
+  <li>Master de certificación: <code>cert.prod.master.{jcl | batch | cics | mapas | tda}</code></li>
+  <li>Desarrollo hacia master: <code>tcert.desa.master.{jcl | batch | cics | mapas | tda}</code></li>
+  <li>Particionado de inicio de día: <code>ctpct.s.reporte.carlos</code></li>
+  <li>Propia librería: <code>a l +</code> · Librería de otro usuario: <code>a p42.+</code></li>
+ </ul>
+ <div class="note"><b>Creación de un particionado nuevo, paso a paso:</b> ${GUARDRAIL}</div>`,
+ fu:["¿Cómo hago un compare y merge?"]
+},
+
+/* ================= 08 OPEN ================= */
+{
+ id:"08.1", mod:"08", title:"OPEN — estado del módulo", primary:true,
+ src:"lista de aplicativos.txt",
+ kw:["open","oracle","putty","winscp","maximo de intentos","crear cuenta","afiliaciones","tarjetas open","guia oracle","ssh","sql"],
+ body:()=>`<div class="note"><b>${GUARDRAIL}</b></div>
+ <p>El módulo 08 está previsto para cubrir Oracle, PuTTY, WinSCP, tarjetas (error de "máximo de intentos"), creación de cuentas y afiliaciones. El repositorio actual solo tiene los <b>accesos</b>, no los procedimientos.</p>
+ <h4>Accesos registrados</h4>
+ <ul class="arrow">
+  <li>COMP (Oracle 12c) — configuración y mantenimiento de parámetros globales</li>
+  <li>Oracle viejo · Oracle nuevo</li>
+  <li>WinSCP · SSH Secure Shell Client</li>
+  <li>Sistema de Administración de Tarjetas</li>
+  <li>BDUC · Multired Virtual · Págalo (WebSphere)</li>
+ </ul>`,
+ fu:["Muéstrame los enlaces de certificación"]
+},
+
+/* ================= 09 TRX ================= */
+{
+ id:"09.1", mod:"09", title:"CCICSAP — subsistema de aplicaciones", primary:true,
+ src:"09_Capacitación Emulación.pptx · Chat Bot Plan.docx",
+ kw:["ccicsap","at01","ol00","pg00","subsistema aplicaciones","tarjetas cajeros","pagos en linea","comisiones","tarifas","cics ap"],
+ body:()=>`<p>Subsistema CICS del mainframe usado para aplicaciones y sistemas complejos.</p>
+ <h4>Regiones / transacciones</h4>
+ <ul class="arrow"><li><code>AT01</code></li><li><code>OL00</code></li><li><code>PG00</code></li></ul>
+ <h4>Aplicaciones que soporta</h4>
+ <ul class="arrow">
+  <li>RRHH · Préstamos · Finanzas</li>
+  <li>Administración de tarjetas para cajeros automáticos</li>
+  <li>Pagos en línea — registro de entidad</li>
+  <li>Pago de comisiones o tarifas</li>
+ </ul>
+ <p class="hint">En el CCICSAP también se abren los VSAM cuando el MEPCE10 no actualiza fechas (PCICSAP).</p>`,
+ fu:["¿Qué es el CCICSTP?","¿Qué son las regiones TOR, AOR y FOR?"]
+},
+{
+ id:"09.2", mod:"09", title:"CCICSTP — Core Bancario (TOLD)",
+ src:"09_Capacitación Emulación.pptx · Chat Bot Plan.docx",
+ kw:["ccicstp","da00","ae00","si81","dg00","core bancario","told","cuentas","depositos ahorros","central de saldos","cics tp","claves de autorizacion"],
+ body:()=>`<p>Subsistema CICS usado para el <b>Sistema principal del banco</b> (Core Bancario — TOLD).</p>
+ <h4>Regiones / transacciones</h4>
+ <ul class="arrow"><li><code>DA00</code></li><li><code>AE00</code></li><li><code>SI81</code></li><li><code>DG00</code> — Administrador de Recursos / Subida de Sistema</li></ul>
+ <h4>Aplicaciones que soporta</h4>
+ <ul class="arrow">
+  <li>Depósitos de Ahorros MN y ME</li>
+  <li>Central de Saldos de Cuentas</li>
+  <li>Sistemas de Claves de Autorización</li>
+  <li>Compensación Electrónica de Transferencias</li>
+  <li>Sistemas de Transacciones Bancarias</li>
+ </ul>
+ <p class="hint">Ingreso: por Personal <code>DBDCCICS</code> · por Emulación <code>CCICSTP</code>. También se usa <code>CZ29</code> para consultar tablas y VSAM.</p>`,
+ fu:["¿Cómo levanto el TOLD?","¿Qué es el CCICSAP?"]
+},
+
+/* ================= 10 SARAWEB ================= */
+{
+ id:"10.1", mod:"10", title:"Mapa de transacciones SaraWeb", primary:true,
+ src:"10_Comandos - Saraweb.xlsx (hoja MAPA)",
+ kw:["saraweb","sara web","transacciones","transaccion","txn","tx","numero de operacion","mapa de transacciones","buscar transaccion","operaciones","que hace la tx"],
+ body:()=>`<p><b>${DATA.trx.length} transacciones</b> registradas en el mapa de vinculación, agrupadas por bloque. Busca por número o por descripción:</p>
+ <div class="finder"><input id="trxq" placeholder="Ej.: 1700, retiro, cheque, transferencia…" autocomplete="off"></div>
+ <div id="trxout">${trxTable(DATA.trx.slice(0,40))}</div>
+ <p class="hint" id="trxcount">Mostrando las primeras 40 de ${DATA.trx.length}.</p>`,
+ after:(root)=>{
+   const inp = root.querySelector('#trxq'), out = root.querySelector('#trxout'), cnt = root.querySelector('#trxcount');
+   inp.addEventListener('input',()=>{
+     const q = norm(inp.value).trim();
+     if(!q){ out.innerHTML = trxTable(DATA.trx.slice(0,40)); cnt.textContent = `Mostrando las primeras 40 de ${DATA.trx.length}.`; return; }
+     const r = DATA.trx.filter(t => t.t.includes(q) || norm(t.d).includes(q) || norm(t.b).includes(q));
+     out.innerHTML = r.length ? trxTable(r.slice(0,80)) : `<p class="hint">Sin coincidencias en el mapa de transacciones.</p>`;
+     cnt.textContent = r.length ? `${r.length} coincidencia(s).` : "";
+   });
+ },
+ fu:["¿Qué pasos sigue la transacción 2200?","¿Qué tablas necesita la 9135?"]
+},
+{
+ id:"10.2", mod:"10", title:"Tx 2200 — ingresar nuevo juzgado",
+ src:"10_Comandos - Saraweb.xlsx (hoja PASOS)",
+ kw:["2200","juzgado","emision de certificado","depositos judiciales","dj00","ubigeo","cortes superiores","nuevo juzgado"],
+ body:()=>`<p>Transacción 2200 — Emisión de certificado en MN y ME. Pasos para ingresar un nuevo juzgado:</p>
+ <ol>
+  <li>Ingresar a emulación</li>
+  <li>Ingresar al <b>AP</b></li>
+  <li>Digitar <code>dj00</code></li>
+  <li>Opción <b>5</b> -> Opción <b>6</b></li>
+  <li><b>Tipo de juzgado</b>: según la lista enviada por Depósitos Judiciales (01, 02, 03… 10)</li>
+  <li><b>Secuencia</b>: no se ingresa nada</li>
+  <li><b>Situación</b>: en su mayoría <code>D</code> (definitivo)</li>
+  <li><b>Nombre</b>: según la lista enviada por Depósitos Judiciales</li>
+  <li><b>Tipo depósito</b>: <code>J</code> judicial o <code>A</code> administrativo</li>
+  <li>Últimos números del código indicado en el TD <span class="hint">(también visible en la opción 8, "Cortes superiores")</span></li>
+ </ol>
+ <div class="note">Agregar el <b>ubigeo</b> que indica el trámite documentario.</div>`,
+ fu:["¿Qué tablas necesita la 9135?"]
+},
+{
+ id:"10.3", mod:"10", title:"Tx 9135 — tablas de tributos a copiar",
+ src:"10_Comandos - Saraweb.xlsx (hoja PASOS)",
+ kw:["9135","tributos","tablas tributos","bnref02","bnref70","bnref96","bnref98","bnsuf13","copiar tablas","desarrollo a certificacion","sute sunat"],
+ body:()=>`<p>Para las transacciones 9135 se deben copiar estas tablas de <b>desarrollo a certificación</b>:</p>
+ <table><thead><tr><th>Tabla</th><th>Nombre</th><th>LRECL</th><th>Base</th><th>Descripción</th></tr></thead><tbody>
+  <tr><td class="m">R02</td><td class="m">BNREF02</td><td class="m">210</td><td class="m">070</td><td>Maestro de tributos</td></tr>
+  <tr><td class="m">R70</td><td class="m">BNREF70</td><td class="m">230</td><td class="m">070</td><td>Cobranza coactiva</td></tr>
+  <tr><td class="m">R96</td><td class="m">BNREF96</td><td class="m">150</td><td class="m">070</td><td>Maestro de alumnos</td></tr>
+  <tr><td class="m">R98</td><td class="m">BNREF98</td><td class="m">70</td><td class="m">070</td><td>Tarifario</td></tr>
+  <tr><td class="m">S13</td><td class="m">BNSUF13</td><td class="m">120</td><td class="m">—</td><td>Tablas para aplicativo SUTE-SUNAT</td></tr>
+ </tbody></table>`,
+ fu:["Buscar transacción en el mapa de SaraWeb"]
+},
+{
+ id:"10.4", mod:"10", title:"Registro de incidentes y defectos",
+ src:"10_Comandos - Saraweb.xlsx (hoja ERRORES)",
+ kw:["incidentes","defectos","registrar bug","bug","reportar error","hoja errores","formato incidente","impacto","estado defecto"],
+ body:()=>`<p>El repositorio incluye un formato de registro de <b>incidentes y defectos</b> con estos campos:</p>
+ <ul class="arrow">
+  <li>Fecha</li><li>Transacción</li><li>Descripción</li><li>Resolución</li><li>Responsable</li><li>Impacto</li><li>Estado</li>
+ </ul>
+ <p class="hint">La hoja está vacía en la versión actual del Excel: solo contiene la cabecera.</p>
+ <div class="note"><b>Flujo de registro de defectos en ClearQuest:</b> ${GUARDRAIL}</div>`,
+ fu:["¿Qué etapas tiene la documentación en ClearQuest?"]
+},
+
+/* ================= 11 FAQ ================= */
+{
+ id:"11.1", mod:"11", title:"Preguntas frecuentes", primary:true,
+ src:"Repositorio QA consolidado",
+ kw:["faq","preguntas frecuentes","dudas","ayuda general","preguntas"],
+ body:()=>`<h4>¿Por dónde empiezo el día?</h4>
+ <p>Por la parte HOST: los 6 JCL en orden (TOLDVINI, MEPCE10, SITBINI, CVMED01, RECAD07, PDBSPILL). Recién después va SaraWeb en los 4 servidores.</p>
+ <h4>¿Dónde ejecuto los JCL del inicio de día?</h4>
+ <p>En ROSCOC, dentro del particionado <code>ctpct.s.reporte.carlos</code>.</p>
+ <h4>¿Cómo sé que un job terminó bien?</h4>
+ <p>Revisa el spool con <code>aj &lt;número de job&gt;</code> y busca <code>ENDED RC-0000</code>.</p>
+ <h4>¿Qué diferencia hay entre CCICSAP y CCICSTP?</h4>
+ <p>CCICSAP es tarjetas y aplicaciones; CCICSTP es cuentas y el Core Bancario (TOLD).</p>
+ <h4>¿Qué hago si el CICSFOR se cae?</h4>
+ <p>Bajarlo con <code>cemt p shut i</code> (o <code>/c ccicsfor</code>) y subirlo con <code>/s ccicsfor</code> desde el TSO.</p>
+ <h4>¿Dónde están los accesos y contraseñas?</h4>
+ <p>Los enlaces están en el módulo 01. Las contraseñas viven en el Excel <code>01_Links Certi.xlsx</code>, no en este asistente.</p>
+ <h4>¿Qué documentos entrego por etapa?</h4>
+ <p>Revisión: Checklist y CRG. Diseño: DCP e IAR. Cierre: actas RC e IRPF. Detalle en el módulo 04.</p>
+ <h4>¿El asistente puede ejecutar algo por mí?</h4>
+ <p>No. Solo guía, explica, muestra rutas y documenta. No ejecuta comandos, no modifica sistemas ni certifica.</p>`,
+ fu:["¿Cuál es el alcance del asistente?","¿Qué módulos existen?"]
+},
+{
+ id:"11.2", mod:"11", title:"Alcance del asistente",
+ src:"Chat Bot Plan (Lista de requerimientos).docx",
+ kw:["alcance","que puedes hacer","que haces","limitaciones","no puedes","ayuda","reglas","para que sirves","quien eres"],
+ body:()=>`<h4>Sí hace</h4>
+ <ul class="arrow"><li>Responder preguntas del área</li><li>Buscar documentación y mostrar procedimientos</li><li>Explicar conceptos y guiar paso a paso</li><li>Mostrar enlaces, checklists y plantillas</li></ul>
+ <h4>No hace</h4>
+ <ul class="arrow"><li>Ejecutar procesos Host ni comandos</li><li>Modificar información o sistemas</li><li>Tomar decisiones de certificación o pases a producción</li><li>Inventar respuestas o responder con información no documentada</li></ul>
+ <div class="note">Cuando un tema no está en el repositorio, la respuesta es siempre la misma: <b>"${GUARDRAIL}"</b></div>
+ <h4>Cobertura actual del repositorio</h4>
+ <table><thead><tr><th>Módulo</th><th>Estado</th></tr></thead><tbody>
+ ${MODULES.map(m=>`<tr><td class="m">${m.id}</td><td>${m.name} — <b style="color:${m.status==='parcial'?'var(--amber)':'var(--signal)'}">${m.status}</b></td></tr>`).join("")}
+ </tbody></table>`,
+ fu:["¿Qué falta documentar?"]
+}
+];
+
+/* =========================================================
+   MOTOR DE BÚSQUEDA
+   ========================================================= */
+const STOP = new Set(["que","como","cual","cuales","donde","cuando","para","por","con","los","las","del","una","uno","unos","unas","este","esta","esto","hacer","hago","hace","tengo","puedo","porfa","favor","quiero","necesito","dime","muestrame","explicame","sobre","the","and"]);
+
+function tokens(q){
+  return norm(q).replace(/[^a-z0-9\s]/g," ").split(/\s+/).filter(w=>w.length>2 && !STOP.has(w));
+}
+
+function score(entry,q,toks){
+  let s=0;
+  const nq = norm(q);
+  const nt = norm(entry.title);
+  const matched = new Set();
+  for(const k of entry.kw){
+    const nk = norm(k);
+    if(nq.includes(nk)){
+      s += nk.includes(" ") ? 14 : 9;
+      toks.forEach(t=>{ if(nk.includes(t)||t.includes(nk)) matched.add(t); });
+    }else for(const t of toks) if(nk.includes(t)||t.includes(nk)){ s += 3; matched.add(t); }
+  }
+  for(const t of toks) if(nt.includes(t)){ s += 5; matched.add(t); }
+  // Igual que en el servidor: premia cubrir varias palabras distintas de la
+  // pregunta, no solo una en común, para no confundir fichas por 1 palabra suelta.
+  if(toks.length >= 2) s += 6 * Math.max(0, matched.size - 1);
+  if(entry.primary) s += 1;
+  return s;
+}
+
+function answer(q){
+  const toks = tokens(q);
+  const ranked = KB.map(e=>({e,s:score(e,q,toks)})).sort((a,b)=>b.s-a.s);
+  const top = ranked[0];
+
+  // atajo: transacción por número de 4 dígitos
+  const m = norm(q).match(/\b(\d{4})\b/);
+  let txnHits = null, txn = null;
+  if(m){
+    txn = m[1];
+    const hits = DATA.trx.filter(t=>t.t===txn);
+    if(hits.length) txnHits = hits;
+  }
+  // el número gana salvo que haya una ficha claramente más específica
+  if(txnHits && (top.e.id === "10.1" || !(top && top.s >= 14 && toks.length >= 2))) return {type:"trx", txn, hits:txnHits};
+
+  if(!top || top.s < 8){
+    if(txnHits) return {type:"trx", txn, hits:txnHits};
+    return {type:"none"};
+  }
+  const also = ranked.slice(1,4).filter(r=>r.s >= top.s*0.55 && r.s>=8).map(r=>r.e);
+  return {type:"kb", entry:top.e, also, txn: txnHits?txn:null};
+}
+
+
+
+/* =========================================================
+   RENDER
+   ========================================================= */
+const wrap=document.getElementById('wrap'), stream=document.getElementById('stream');
+let msgs=0;
+const now=()=>new Date().toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit',hour12:true}).toLowerCase().replace('am','a. m.').replace('pm','p. m.');
+function bump(){ msgs++; document.getElementById('count').textContent = msgs+(msgs===1?' mensaje':' mensajes'); }
+function push(n){ wrap.appendChild(n); bump(); stream.scrollTop=stream.scrollHeight; }
+
+function userTurn(text){
+  const d=document.createElement('div'); d.className='turn me';
+  d.innerHTML=`<div class="meta"><span class="time">${now()}</span><span class="who me">TÚ</span></div>
+    <div class="bubble">${esc(text)}</div>`;
+  push(d);
+}
+
+function botTurn({lead,html,src,state,mod,fu,after}){
+  const m=MODULES.find(x=>x.id===mod);
+  const d=document.createElement('div'); d.className='turn';
+  d.innerHTML=`<div class="meta">
+      <span class="who qa">QA</span><span class="time">${now()}</span>
+      <span class="state ${state==='warn'?'warn':''}">${mod?esc(m?m.id+'_'+m.name:''):''}${mod?' · ':''}${state==='warn'?'NO DOCUMENTADO':'DOCUMENTADO'}</span>
+    </div>
+    <div class="lead">${esc(lead)}</div>
+    <div class="block">${html}</div>
+    ${src?`<div class="src"><b>▸ fuente:</b> ${esc(src)}</div>`:''}`;
+  if(fu&&fu.length){
+    const f=document.createElement('div'); f.className='followups';
+    fu.forEach(t=>{const b=document.createElement('button');b.className='fu';b.textContent=t;b.onclick=()=>ask(t);f.appendChild(b);});
+    d.appendChild(f);
+  }
+  push(d);
+  if(after) after(d);
+  return d;
+}
+
+function chipRow(items,cb){
+  const d=document.createElement('div'); d.className='turn';
+  const f=document.createElement('div'); f.className='followups'; f.style.marginTop='-18px';
+  items.forEach(it=>{const b=document.createElement('button');b.className='fu';b.textContent=it.label;b.onclick=()=>cb(it);f.appendChild(b);});
+  d.appendChild(f); wrap.appendChild(d); stream.scrollTop=stream.scrollHeight;
+}
+
+function renderEntry(e,also,txn){
+  const html=typeof e.body==='function'?e.body():e.body;
+  const warn=html.includes(GUARDRAIL);
+  const fu=(txn?[`Ver la transacción ${txn}`]:[]).concat(e.fu||[]);
+  botTurn({lead:e.title+':',html,src:e.src,state:warn?'warn':'ok',mod:e.mod,fu,after:e.after});
+  if(also&&also.length) chipRow(also.map(a=>({label:a.mod+'_'+a.title,e:a})),it=>{userTurn(it.e.title);renderEntry(it.e);});
+  setWhere(e.mod);
+}
+
+function renderTrx(txn,hits){
+  botTurn({
+    lead:`Transacción ${txn} — mapa de vinculación SaraWeb:`,
+    html:`${trxTable(hits)}<p class="hint">Coincidencia exacta en el mapa de transacciones.</p>`,
+    src:"10_Comandos - Saraweb.xlsx (hoja MAPA)",state:'ok',mod:"10",
+    fu:["Ver el mapa completo de transacciones"]
+  });
+  setWhere("10");
+}
+
+function renderNone(q){
+  botTurn({
+    lead:"Sin información registrada:",
+    html:`<p style="color:var(--amber)"><b>${GUARDRAIL}</b></p>
+      <p class="hint">consulta recibida: “${esc(q)}”</p>
+      <h4>Lo que sí puedo cubrir</h4>
+      <ul class="arrow">
+        <li>Inicio de día HOST y SaraWeb, con sus errores</li>
+        <li>Comandos ROSCOE, JCL y librerías</li>
+        <li>Reinicios de CICS y regiones TOR / AOR / FOR</li>
+        <li>Transacciones SaraWeb (${DATA.trx.length} registradas)</li>
+        <li>Plantillas y entregables de ClearQuest</li>
+        <li>Accesos y enlaces de certificación</li>
+      </ul>`,
+    state:'warn',
+    fu:["¿Cuál es el alcance del asistente?","02_Inicio de día","¿Qué módulos existen?"]
+  });
+}
+
+/* =========================================================
+   IA LOCAL (Ollama) — capa conversacional sobre TODA la página
+
+   El contexto ya NO se arma aquí ni se manda en cada pregunta.
+   server.py lee este mismo HTML al arrancar, extrae los 11
+   módulos, las 35 fichas y las 387 transacciones, y los deja
+   fijos en el prompt del modelo — así Ollama reutiliza su caché
+   y no reprocesa 10.000 tokens en cada consulta. Desde aquí solo
+   viaja la pregunta y el historial reciente, y la respuesta
+   vuelve en streaming (token a token), por lo que la interfaz
+   nunca se queda colgada esperando.
+
+   El módulo 01 (enlaces y credenciales) sigue EXCLUIDO del
+   contexto que ve el modelo, igual que antes.
+   ========================================================= */
+const AI = {
+  on: true,
+  direct: false,     // módulo 12: conversación directa, sin fichas automáticas
+  state: 'iniciando',
+  history: [],       // memoria conversacional (últimos turnos)
+  ctrl: null         // AbortController de la generación en curso
+};
+
+const aiStateEl  = document.getElementById('aistate');
+const aiStateTxt = document.getElementById('aistatetxt');
+const aiToggle   = document.getElementById('aitoggle');
+
+const AI_LABEL = {
+  iniciando:'IA LOCAL · INICIANDO',
+  calentando:'IA LOCAL · CALENTANDO',
+  listo:'IA LOCAL · LISTA',
+  generando:'IA LOCAL · RESPONDIENDO',
+  error:'IA LOCAL · SIN CONEXIÓN',
+  apagada:'IA LOCAL · APAGADA'
+};
+
+function setAIState(s, detail){
+  AI.state = s;
+  aiStateEl.dataset.s = (s==='generando') ? 'listo' : s;
+  aiStateTxt.textContent = AI_LABEL[s] || s.toUpperCase();
+  aiStateEl.title = detail || 'Estado del modelo local';
+}
+
+/* --- vigilancia del backend: el estado siempre visible en la barra --- */
+async function pollHealth(){
+  try{
+    const r = await fetch('/api/health',{cache:'no-store'});
+    const h = await r.json();
+    if(AI.state!=='generando') setAIState(AI.on ? h.state : 'apagada', h.detail);
+    AI.kb = h.kb;
+    return h;
+  }catch(err){
+    if(AI.state!=='generando')
+      setAIState('error','No hay respuesta de server.py. Ejecuta: python server.py');
+    return null;
+  }
+}
+(function healthLoop(){
+  pollHealth().then(h=>setTimeout(healthLoop, (h && h.state==='listo') ? 30000 : 4000));
+})();
+
+/* --- markdown mínimo y seguro para la respuesta del modelo --- */
+function mdLite(t){
+  const pres = [];
+  let s = String(t||'').replace(/```(?:[a-z]*)\n?([\s\S]*?)```/gi,(m,c)=>{
+    pres.push(c.replace(/\s+$/,'')); return `
+@@PRE${pres.length-1}@@
+`;
+  });
+  s = esc(s)
+      .replace(/\*\*([^*\n]+)\*\*/g,'<b>$1</b>')
+      .replace(/`([^`\n]+)`/g,'<code>$1</code>');
+  const out=[]; let li=null;
+  for(const raw of s.split('\n')){
+    const line = raw.trim();
+    if(/^@@PRE\d+@@$/.test(line)){
+      if(li){out.push(`<ul class="arrow">${li.join('')}</ul>`);li=null;}
+      out.push(line); continue;
+    }
+    const m = line.match(/^(?:[-*•]|\d+[.)])\s+(.*)$/);
+    if(m){ (li=li||[]).push(`<li>${m[1]}</li>`); continue; }
+    if(li){out.push(`<ul class="arrow">${li.join('')}</ul>`);li=null;}
+    if(line) out.push(`<p>${line}</p>`);
+  }
+  if(li) out.push(`<ul class="arrow">${li.join('')}</ul>`);
+  return out.join('').replace(/@@PRE(\d+)@@/g,(m,i)=>`<pre>${esc(pres[+i])}</pre>`);
+}
+
+/* --- turno de IA que se va rellenando mientras llega el texto --- */
+function aiTurn(lead){
+  const d=document.createElement('div'); d.className='turn';
+  d.innerHTML=`<div class="meta"><span class="who qa">QA</span><span class="time">${now()}</span>
+      <span class="state warn" data-r="st">IA LOCAL · GENERANDO</span></div>
+    <div class="lead">${esc(lead)}</div>
+    <div class="block ai-body" data-r="body"><p class="hint">consultando el modelo local<span class="caret"></span></p></div>`;
+  push(d);
+  return d;
+}
+
+function stopButton(onStop){
+  const b=document.createElement('button');
+  b.className='stopgen'; b.textContent='DETENER';
+  b.onclick=onStop;
+  aiToggle.insertAdjacentElement('beforebegin', b);
+  return b;
+}
+
+/* --- la llamada: SSE por streaming, con memoria y reintento --- */
+async function askLocalAI(q, opts){
+  opts = opts || {};
+  // si había una respuesta en curso, se cancela: una generación a la vez
+  if(AI.ctrl) AI.ctrl.abort();
+  const node = aiTurn(opts.lead || 'Respuesta de la IA local sobre la documentación del repositorio:');
+  const body = node.querySelector('[data-r="body"]');
+  const st   = node.querySelector('[data-r="st"]');
+
+  AI.ctrl = new AbortController();
+  const stop = stopButton(()=>{ if(AI.ctrl) AI.ctrl.abort(); });
+  setAIState('generando');
+
+  let acc = '', errored = null, retried = false;
+  const paint = (final)=>{
+    body.innerHTML = acc
+      ? mdLite(acc) + (final?'':'<span class="caret"></span>')
+      : `<p class="hint">${retried?'reconectando con la IA local':'consultando el modelo local'}<span class="caret"></span></p>`;
+    stream.scrollTop = stream.scrollHeight;
+  };
+
+  try{
+    const res = await fetch('/api/ai',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ question:q, history: AI.history.slice(-6) }),
+      signal: AI.ctrl.signal
+    });
+    if(!res.ok || !res.body) throw new Error('HTTP '+res.status);
+
+    const reader = res.body.getReader(), dec = new TextDecoder();
+    let buf = '';
+    for(;;){
+      const {value, done} = await reader.read();
+      if(done) break;
+      buf += dec.decode(value,{stream:true});
+      const parts = buf.split('\n\n'); buf = parts.pop();
+      for(const p of parts){
+        const line = p.split('\n').find(l=>l.startsWith('data: '));
+        if(!line) continue;
+        let ev; try{ ev = JSON.parse(line.slice(6)); }catch(e){ continue; }
+
+        if(ev.event==='start' && ev.warming){
+          st.textContent = 'IA LOCAL · CALENTANDO';
+          body.innerHTML = `<p class="hint">El modelo está cargando la documentación del repositorio por primera vez. Esto pasa una sola vez tras arrancar el servidor.<span class="caret"></span></p>`;
+        }
+        else if(ev.event==='retry'){ retried = true; paint(false); }
+        else if(ev.event==='delta'){ acc += ev.text; paint(false); }
+        else if(ev.event==='error'){ errored = ev.message; }
+        else if(ev.event==='done'){
+          if(ev.empty && !acc) errored = 'El modelo no devolvió texto.';
+          if(ev.total_ms) node.dataset.ms = ev.total_ms;
+        }
+      }
+    }
+  }catch(err){
+    if(err.name === 'AbortError'){
+      st.textContent = 'IA LOCAL · DETENIDA';
+      paint(true);
+      if(acc) AI.history.push({role:'user',content:q},{role:'assistant',content:acc});
+      stop.remove(); AI.ctrl = null; pollHealth();
+      return;
+    }
+    errored = 'No hay conexión con el servidor local (server.py).';
+  }
+
+  stop.remove();
+  AI.ctrl = null;
+
+  if(errored && !acc){
+    node.remove();
+    botTurn({
+      lead:'La IA local no está disponible ahora mismo:',
+      html:`<p style="color:var(--amber)">${esc(errored)}</p>
+        <p class="hint">Revisa: 1) que <code>python server.py</code> siga corriendo, 2) que Ollama responda (<code>ollama serve</code>), 3) que el modelo esté descargado (<code>ollama pull phi4-mini</code>).</p>
+        <p class="hint">La búsqueda documental del repositorio sigue funcionando sin IA.</p>`,
+      state:'warn'
+    });
+    if(!opts.hadKB) renderNone(q);
+    setAIState('error', errored);
+    return;
+  }
+
+  st.textContent = 'IA LOCAL · NO VERIFICADA';
+  paint(true);
+  body.insertAdjacentHTML('beforeend',
+    `<div class="note"><b>Verifica antes de usar.</b> Esta respuesta la redactó el modelo local a partir de la documentación del repositorio; no es una ficha verificada. Si es información crítica, confírmala con un analista senior.</div>`);
+
+  AI.history.push({role:'user',content:q},{role:'assistant',content:acc});
+  if(AI.history.length > 12) AI.history = AI.history.slice(-12);
+  setAIState('listo');
+  stream.scrollTop = stream.scrollHeight;
+}
+
+/* =========================================================
+   ENRUTADO DE CONSULTAS
+   Con la IA activa, toda consulta escrita pasa por el modelo con
+   TODA la página como contexto. Cuando además hay una ficha
+   documentada, esa ficha se muestra primero: es la fuente
+   verificada, y la IA la complementa en lenguaje natural.
+   Con la IA apagada se comporta como el buscador documental puro.
+   ========================================================= */
+function ask(text){
+  const q=(text||'').trim(); if(!q) return;
+  userTurn(q);
+  LAST_QUERY = q;
+
+  // Módulo 12: hablas solo con la IA. Nada de fichas ni tablas automáticas,
+  // pero el modelo conserva toda la documentación y el hilo de la charla.
+  if(AI.direct){
+    if(!AI.on){ toggleAI(true); }
+    askLocalAI(q,{hadKB:true, lead:'IA local — conversación directa:'});
+    return;
+  }
+
+  const r=answer(q);
+
+  // Búsqueda exacta por número de transacción: la tabla es la respuesta.
+  if(r.type==='trx'){ renderTrx(r.txn,r.hits); return; }
+
+  if(!AI.on){
+    if(r.type==='kb') renderEntry(r.entry,r.also,r.txn);
+    else renderNone(q);
+    return;
+  }
+
+  if(r.type==='kb'){
+    renderEntry(r.entry,r.also,r.txn);
+    // Módulo 01 (links/accesos/credenciales): la tabla YA es la respuesta
+    // completa y verificada. Dejar que la IA "comente" aquí solo agrega
+    // riesgo de que mezcle contenido de otro documento — ya pasó una vez
+    // (pidieron el link de BDUC y la IA citó un manual no relacionado).
+    if(r.entry.mod === '01') return;
+    askLocalAI(q,{
+      hadKB:true,
+      lead:`Lectura de la IA local sobre la ficha ${r.entry.id} y el resto del repositorio:`
+    });
+  }else{
+    askLocalAI(q,{
+      hadKB:false,
+      lead:'Sin ficha exacta en el repositorio. Respuesta de la IA local con toda la documentación cargada:'
+    });
+  }
+}
+
+/* ---------- módulo 12: conversación directa con la IA ---------- */
+function toggleAI(on){
+  AI.on = on;
+  aiToggle.setAttribute('aria-pressed', on?'true':'false');
+  aiToggle.textContent = on?'IA ON':'IA OFF';
+  if(on) pollHealth();
+  else { if(AI.ctrl) AI.ctrl.abort(); setAIState('apagada','Solo búsqueda documental. Púlsalo para reactivar la IA local.'); }
+}
+
+function plainTurn(state, lead, html, buttons){
+  const d=document.createElement('div'); d.className='turn';
+  d.innerHTML=`<div class="meta"><span class="who qa">QA</span><span class="time">${now()}</span>
+      <span class="state">${esc(state)}</span></div>
+    <div class="lead">${esc(lead)}</div>
+    <div class="block">${html}</div>`;
+  if(buttons&&buttons.length){
+    const f=document.createElement('div'); f.className='followups';
+    buttons.forEach(b=>{
+      const el=document.createElement('button'); el.className='fu'; el.textContent=b.label;
+      el.onclick=b.onclick||(()=>ask(b.label));
+      f.appendChild(el);
+    });
+    d.appendChild(f);
+  }
+  push(d);
+  return d;
+}
+
+function enterDirectChat(){
+  AI.direct = true;
+  if(!AI.on) toggleAI(true);
+  userTurn('12_Chat con IA');
+  plainTurn('12_CHAT CON IA · MODO DIRECTO',
+    'Conversación directa con la IA local:',
+    `<p>De aquí en adelante te contesto yo. No voy a abrir fichas ni tablas automáticamente: escribe con libertad y respondo en lenguaje natural.</p>
+     <h4>Lo que sigo teniendo delante</h4>
+     <ul class="arrow">
+       <li>Las ${KB.length} fichas de procedimiento y los 11 módulos del repositorio</li>
+       <li>Las ${DATA.trx.length} transacciones SaraWeb</li>
+       <li>El hilo de esta conversación, para que puedas repreguntar sin repetir el tema</li>
+     </ul>
+     <p class="hint">Los enlaces y credenciales del módulo 01 siguen fuera de mi alcance a propósito.</p>
+     <div class="note"><b>Sigo sin ser una fuente verificada.</b> En modo directo ya no ves la ficha del repositorio al lado, así que contrasta contra el módulo correspondiente antes de ejecutar nada en un ambiente.</div>`,
+    [
+      {label:'Explícame el inicio de día como si fuera nuevo en el área'},
+      {label:'¿Qué diferencia hay entre TOR, AOR y FOR?'},
+      {label:'← Volver al buscador del repositorio', onclick:exitDirectChat}
+    ]);
+  setWhere('12');
+  qEl.placeholder = 'Modo IA directa — pregunta lo que quieras...';
+  closeSide();
+}
+
+function exitDirectChat(){
+  AI.direct = false;
+  qEl.placeholder = 'Escribe tu consulta o presiona una opción del menú...';
+  plainTurn('BUSCADOR DEL REPOSITORIO',
+    'Modo directo desactivado:',
+    `<p>Vuelvo a responder con las fichas documentadas del repositorio; la IA local las complementa cuando hace falta.</p>`,
+    [{label:'¿Cuál es el alcance del asistente?'}]);
+  document.getElementById('where').innerHTML='<span class="k">00_</span> Inicio';
+  nav.querySelectorAll('.nav-item').forEach(b=>b.setAttribute('aria-current','false'));
+}
+
+function openModule(id){
+  if(id==='12'){ enterDirectChat(); return; }
+  AI.direct = false;
+  qEl.placeholder = 'Escribe tu consulta o presiona una opción del menú...';
+  const mod=MODULES.find(m=>m.id===id);
+  const entries=KB.filter(e=>e.mod===id);
+  userTurn(`${id}_${mod.name}`);
+  LAST_QUERY = "";   // navegar por el menú siempre muestra todo, sin filtrar
+  if(!entries.length){renderNone(mod.name);return;}
+  const main=entries.find(e=>e.primary)||entries[0];
+  renderEntry(main);
+  const others=entries.filter(e=>e!==main);
+  if(others.length) chipRow(others.map(o=>({label:o.title,e:o})),it=>{userTurn(it.e.title);renderEntry(it.e);});
+  closeSide();
+}
+
+/* ---------- navegación ---------- */
+const nav=document.getElementById('nav');
+MODULES.forEach(m=>{
+  const b=document.createElement('button'); b.className='nav-item'; b.dataset.mod=m.id;
+  b.innerHTML=`<span class="n">${m.id}</span><span class="t">${m.name}</span>${m.status==='parcial'?'<span class="flag">PARCIAL</span>':''}`;
+  b.onclick=()=>openModule(m.id);
+  nav.appendChild(b);
+});
+const chips=document.getElementById('chips');
+["01","02","03","04","05","06"].forEach(id=>{
+  const b=document.createElement('button'); b.className='chip'; b.dataset.mod=id; b.textContent=id;
+  b.onclick=()=>openModule(id); chips.appendChild(b);
+});
+function setWhere(id){
+  const m=MODULES.find(x=>x.id===id);
+  if(m) document.getElementById('where').innerHTML=`<span class="k">${m.id}_</span> ${esc(m.name)}`;
+  nav.querySelectorAll('.nav-item').forEach(b=>b.setAttribute('aria-current',b.dataset.mod===id?'true':'false'));
+  chips.querySelectorAll('.chip').forEach(b=>b.setAttribute('aria-current',b.dataset.mod===id?'true':'false'));
+}
+
+/* ---------- eventos ---------- */
+const qEl=document.getElementById('q');
+document.getElementById('send').onclick=()=>{ask(qEl.value);qEl.value='';};
+qEl.addEventListener('keydown',e=>{if(e.key==='Enter'){ask(qEl.value);qEl.value='';}});
+document.getElementById('help').onclick=()=>ask("¿Cuál es el alcance del asistente?");
+aiToggle.onclick=()=>{
+  toggleAI(!AI.on);
+  // apagar la IA no tiene sentido dentro del modo 12: se sale del modo
+  if(!AI.on && AI.direct) exitDirectChat();
+};
+
+/* ---------- modo CHAT / ADMINISTRADOR ---------- */
+const modeChatBtn=document.getElementById('modeChat'), modeAdminBtn=document.getElementById('modeAdmin');
+const adminPanel=document.getElementById('adminPanel');
+const streamEl=document.getElementById('stream'), composerEl=document.querySelector('.composer');
+function setMode(m){
+  const isAdmin = m==='admin';
+  modeChatBtn.setAttribute('aria-pressed', isAdmin?'false':'true');
+  modeAdminBtn.setAttribute('aria-pressed', isAdmin?'true':'false');
+  adminPanel.hidden = !isAdmin;
+  if(streamEl) streamEl.hidden = isAdmin;
+  if(composerEl) composerEl.hidden = isAdmin;
+  if(isAdmin) refreshAdminList();
+}
+modeChatBtn.onclick=()=>setMode('chat');
+modeAdminBtn.onclick=()=>setMode('admin');
+
+const dropzone=document.getElementById('dropzone'), fileInput=document.getElementById('adminFile');
+const uploadStatus=document.getElementById('uploadStatus');
+['dragover','dragenter'].forEach(ev=>dropzone.addEventListener(ev,e=>{e.preventDefault();dropzone.classList.add('over');}));
+['dragleave','drop'].forEach(ev=>dropzone.addEventListener(ev,e=>{e.preventDefault();dropzone.classList.remove('over');}));
+dropzone.addEventListener('drop',e=>{
+  const f=e.dataTransfer.files && e.dataTransfer.files[0];
+  if(f) uploadFile(f);
+});
+fileInput.addEventListener('change',()=>{
+  if(fileInput.files[0]) uploadFile(fileInput.files[0]);
+});
+
+async function uploadFile(file){
+  uploadStatus.className='admin-status'; uploadStatus.textContent=`Subiendo ${file.name}…`;
+  const fd=new FormData(); fd.append('file',file);
+  try{
+    const res=await fetch('/api/admin/upload',{method:'POST',body:fd});
+    const data=await res.json();
+    if(!res.ok || !data.ok){
+      uploadStatus.className='admin-status err';
+      uploadStatus.textContent='Error: '+(data.error||(data.warnings||[]).join('; ')||'no se pudo procesar');
+    }else{
+      let msg=`Listo: ${data.entries_added} ficha(s) agregadas desde "${data.filename}".`;
+      if(data.warnings && data.warnings.length) msg+='\nAvisos: '+data.warnings.join('; ');
+      if(!data.ocr_available) msg+='\n(OCR no disponible en este equipo para imágenes/PDF escaneados.)';
+      uploadStatus.className='admin-status ok'; uploadStatus.textContent=msg;
+      refreshAdminList();
+      loadAdminKB();
+    }
+  }catch(e){
+    uploadStatus.className='admin-status err'; uploadStatus.textContent='Error de red: '+e;
+  }
+  fileInput.value='';
+}
+
+const noteStatus=document.getElementById('noteStatus');
+document.getElementById('noteSave').onclick=async()=>{
+  const title=document.getElementById('noteTitle').value.trim();
+  const text=document.getElementById('noteText').value.trim();
+  if(!text){ noteStatus.className='admin-status err'; noteStatus.textContent='Escribe algo primero.'; return; }
+  noteStatus.className='admin-status'; noteStatus.textContent='Guardando…';
+  try{
+    const res=await fetch('/api/admin/note',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({title,text})});
+    const data=await res.json();
+    if(!res.ok || !data.ok){ noteStatus.className='admin-status err'; noteStatus.textContent='Error: '+(data.error||'desconocido'); }
+    else{
+      noteStatus.className='admin-status ok'; noteStatus.textContent=`Guardado (${data.entries_added} ficha[s]).`;
+      document.getElementById('noteTitle').value=''; document.getElementById('noteText').value='';
+      refreshAdminList();
+      loadAdminKB();
+    }
+  }catch(e){ noteStatus.className='admin-status err'; noteStatus.textContent='Error de red: '+e; }
+};
+
+function textToHtml(t){
+  return t.split(/\n{2,}/).map(p=>`<p>${esc(p).replace(/\n/g,'<br>')}</p>`).join('');
+}
+async function loadAdminKB(){
+  try{
+    const res=await fetch('/api/admin/public');
+    const data=await res.json();
+    for(let i=KB.length-1;i>=0;i--) if(KB[i]._admin) KB.splice(i,1);
+    (data.entries||[]).forEach(e=>{
+      KB.push({id:e.id, mod:e.mod||'13', title:e.title, kw:e.kw||[], src:e.src||'',
+               _admin:true, body:textToHtml(e.body||'')});
+    });
+  }catch(e){ console.error('No se pudo cargar el conocimiento agregado por Admin', e); }
+}
+loadAdminKB();
+
+const adminListEl=document.getElementById('adminList');
+async function refreshAdminList(){
+  try{
+    const res=await fetch('/api/admin/list');
+    const data=await res.json();
+    adminListEl.innerHTML = data.count
+      ? data.entries.map(e=>{
+          const kw=e.kw||[];
+          const shown=kw.slice(0,15).join(', ');
+          const kwtxt=kw.length ? esc(shown)+(kw.length>15?` … (+${kw.length-15} más)`:'') : '(sin keywords)';
+          return `<div class="row-wrap">
+            <div class="row"><span>${esc(e.added_at||'')}</span><b>${esc(e.title)}</b>
+              <span>[${esc(e.mod)}] ${esc(e.source_filename||'')}</span>
+              <button class="rm" data-id="${esc(e.id)}" title="Eliminar">✕</button></div>
+            <div class="kwline">🔑 ${kwtxt}</div>
+          </div>`;
+        }).join('')
+      : '<div class="row" style="opacity:.6">Todavía no hay fichas agregadas desde Admin.</div>';
+    adminListEl.querySelectorAll('.rm').forEach(b=>b.onclick=async()=>{
+      await fetch('/api/admin/entry/'+encodeURIComponent(b.dataset.id),{method:'DELETE'});
+      refreshAdminList();
+      loadAdminKB();
+    });
+  }catch(e){ adminListEl.innerHTML='<div class="row err">No se pudo cargar la lista.</div>'; }
+}
+const side=document.getElementById('side'), scrim=document.getElementById('scrim');
+function closeSide(){side.classList.remove('open');scrim.classList.remove('on');}
+document.getElementById('burger').onclick=()=>{side.classList.toggle('open');scrim.classList.toggle('on');};
+scrim.onclick=closeSide;
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSide();});
+
+/* ---------- arranque ---------- */
+botTurn({
+  lead:"Asistente del área de Control de Calidad — Banco de la Nación:",
+  html:`<p>Centralizo la documentación técnica y funcional del área. Respondo con lo registrado en el repositorio; cuando algo no está documentado lo digo con esas palabras, no lo supongo.</p>
+  <h4>Cómo consultarme</h4>
+  <ul class="arrow">
+    <li>Escribe libremente: <i>“se cayó el cicsfor”</i>, <i>“cómo ejecuto un jcl”</i></li>
+    <li>Usa el menú lateral (01–11) o el acceso rápido (01–06)</li>
+    <li>Escribe un número de 4 dígitos para buscar una transacción SaraWeb</li>
+  </ul>
+  <p class="hint">${DATA.trx.length} transacciones · ${DATA.links.length} accesos · ${KB.length} fichas de procedimiento</p>`,
+  state:'ok',
+  fu:["02_Inicio de día","¿Cómo ejecuto un JCL?","¿Cómo reinicio los TP?","¿Cuál es el alcance del asistente?"]
+});
+qEl.focus();
+</script>
+</body>
+</html>
