@@ -1113,10 +1113,46 @@ const KB = [
 {
  id:"11.3", mod:"11", title:"¿Qué es BDUC?",
  src:"lista de aplicativos.txt",
- kw:["que es bduc","bduc significa","significado de bduc","base de datos unica de clientes","para que sirve bduc"],
+ kw:["que es bduc","bduc significa","significado de bduc","base de datos unica de clientes","para que sirve bduc","acceso a bduc","como accedo a bduc","como tener acceso a bduc","axeso a bduc"],
  body:()=>`<p><b>BDUC</b> significa <b>Base de Datos Única de Clientes</b>. Es el sistema donde vive la información centralizada de los clientes del banco (incluye accesos principales y espejos).</p>
  <p>Se usa, entre otras cosas, para verificar y activar cuentas de ahorro antes de operaciones como afiliar una tarjeta de débito. Los accesos están en el módulo 01_Links.</p>`,
  fu:["¿Cómo afilio una tarjeta de débito?","¿Dónde están los accesos a BDUC?"]
+},
+{
+ id:"11.5", mod:"11", title:"¿Qué es un ECU?",
+ src:"202X-XXXXX - Checklist.docx",
+ kw:["que es un ecu","que es ecu","ecu significa","significado de ecu"],
+ body:()=>`<p><b>ECU</b> significa <b>Especificaciones de Casos de Uso</b>. Es uno de los entregables del checklist de mantenimiento — describe las funcionalidades/acciones que el sistema debe cubrir, antes de que se escriban los casos de prueba.</p>
+ <p class="hint">No confundir con <b>ECP</b> (Especificaciones de Casos de Prueba), que es el siguiente entregable.</p>`,
+ fu:["¿Qué es un ECP?","¿Qué contiene el checklist de mantenimiento?"]
+},
+{
+ id:"11.6", mod:"11", title:"¿Qué es un ECP?",
+ src:"202X-XXXXX - Checklist.docx",
+ kw:["que es un ecp","que es ecp","ecp significa","significado de ecp"],
+ body:()=>`<p><b>ECP</b> significa <b>Especificaciones de Casos de Prueba</b>. Es el entregable del checklist de mantenimiento donde se detallan los casos de prueba a ejecutar, a partir de lo definido en el ECU.</p>
+ <p class="hint">No confundir con <b>ECU</b> (Especificaciones de Casos de Uso), que es el entregable anterior.</p>`,
+ fu:["¿Qué es un ECU?","¿Qué contiene el checklist de mantenimiento?"]
+},
+{
+ id:"11.7", mod:"11", title:"¿Qué es RC?",
+ src:"Modelo - Revision Conjunta ( RC ).docx",
+ kw:["que es rc","rc significa","significado de rc","que significa rc"],
+ body:()=>`<p><b>RC</b> tiene dos significados según el contexto:</p>
+ <ul class="arrow">
+  <li><b>Revisión Conjunta:</b> el acta de certificación que se firma junto con el IRPF al cierre de las pruebas (módulo 04).</li>
+  <li><b>Return Code (código de retorno) de un job/JCL:</b> por ejemplo <code>TOLDVINI ENDED RC-0000</code> significa que terminó sin errores.</li>
+ </ul>`,
+ fu:["¿Qué documentos entrego por etapa?","¿Cómo ejecuto un JCL?"]
+},
+{
+ id:"11.8", mod:"11", title:"¿Qué es la certificación?",
+ src:"Chat Bot Plan (Lista de requerimientos).docx",
+ kw:["que es una certificacion","que es la certificacion","para que sirve la certificacion","proceso de certificacion","ambiente de certificacion"],
+ body:()=>`<p>La <b>certificación</b> es el proceso con el que el área de Calidad valida que un mantenimiento/sistema funciona correctamente antes de pasar a producción.</p>
+ <p>Tiene 4 etapas (módulo 04): <b>Revisión</b> (Checklist, CRG) → <b>Diseño</b> (DCP, IAR) → <b>Ejecución</b> de las pruebas → cierre con las actas <b>RC</b> e <b>IRPF</b>.</p>
+ <p>Las pruebas se corren en un <b>ambiente de certificación</b> separado del de desarrollo, para no afectar producción mientras se valida.</p>`,
+ fu:["¿Qué documentos entrego por etapa?","¿Cuál es el alcance del asistente?"]
 },
 {
  id:"11.4", mod:"11", title:"¿Qué es SaraWeb?",
@@ -1575,7 +1611,7 @@ function ask(text){
     // parafrasear (confundió TOR con AOR, e inventó que "pre *cic*" es un
     // comando SQL de transacciones). Se muestran tal cual, ya estan bien
     // escritas a mano.
-    const EXACT_ENTRY_IDS = new Set(['01','02.2','02.3','02.4','02.5','02.6','04.1','05.1','06.1','06.2','06.3','06.4','07.1','09.1','09.2','11.0','11.3','11.4']);
+    const EXACT_ENTRY_IDS = new Set(['01','02.2','02.3','02.4','02.5','02.6','04.1','05.1','06.1','06.2','06.3','06.4','07.1','09.1','09.2','11.0','11.3','11.4','11.5','11.6','11.7','11.8']);
     if(r.entry.mod === '01' || EXACT_ENTRY_IDS.has(r.entry.id)){
       renderEntry(r.entry,r.also,r.txn); return;
     }
