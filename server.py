@@ -455,7 +455,7 @@ te las adjuntan en el mensaje del usuario bajo el encabezado "TRANSACCIONES RELA
         matched_toks: set[str] = set()
         for k in kw:
             nk = self._norm(k)
-            if not nk or nk in _QUERY_STOPWORDS or len(nk) <= 3:
+            if not nk or nk in _QUERY_STOPWORDS or len(nk) <= 2:
                 continue
             is_phrase = " " in nk
             # Coincidencia por PALABRA COMPLETA, no por substring: si no, una
@@ -470,7 +470,7 @@ te las adjuntan en el mensaje del usuario bajo el encabezado "TRANSACCIONES RELA
                 matched_toks.update(t for t in toks if t in nk or nk in t)
         nt = self._norm(e["title"])
         for t in toks:
-            if len(t) >= 4 and t in nt:
+            if len(t) >= 3 and t in nt:
                 s += 8
                 matched_toks.add(t)
         # Una ficha larga (p.ej. sacada de un docx grande) acumula keywords de
@@ -954,7 +954,8 @@ _CRED_RE = re.compile(
 CRED_ANSWER = (
     "No manejo usuarios ni contraseñas: quedan fuera de mi contexto a propósito.\n\n"
     "Los accesos están en el módulo 01_Links de esta misma interfaz. Ábrelo en el "
-    "menú lateral y pulsa «Mostrar credenciales»; cada clave se copia con un clic.\n\n"
+    "menú lateral y busca el servicio que necesitas — cada uno tiene su enlace, "
+    "usuario y contraseña por separado.\n\n"
     "Si te doy una clave, es inventada. No la uses."
 )
 

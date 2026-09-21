@@ -759,7 +759,7 @@ const KB = [
 {
  id:"06.2", mod:"06", title:"Reiniciar el CCICSFOR",
  src:"GUÍA PARA EL INICIO DE DÍA.docx",
- kw:["reiniciar cicsfor","ccicsfor","bajar cics","subir cics","cemt p shut","sd.st","pre cic","jesmsglg","tareas pendientes","execution","reinicio for"],
+ kw:["reiniciar cicsfor","ccicsfor","bajar cics","subir cics","cemt p shut","sd.st","pre cic","jesmsglg","tareas pendientes","execution","reinicio for","se cayo algo","se me cayo algo","no se que hacer","algo no funciona","no funciona nada","esta caido","no responde"],
  body:()=>`<ol>
   <li>Entrar al <b>TSO</b> (por emulación o por Personal) e ingresar credenciales</li>
   <li>Escribir <code>sd.st</code></li>
@@ -1078,7 +1078,36 @@ const KB = [
 
 /* ================= 11 FAQ ================= */
 {
- id:"11.1", mod:"11", title:"Preguntas frecuentes", primary:true,
+ id:"11.0", mod:"11", title:"Soy nuevo — guía de bienvenida", primary:true,
+ src:"Chat Bot Plan (Lista de requerimientos).docx",
+ kw:["soy nuevo","soy nueva","no se nada","no se nada de esto","por donde empiezo","primer dia","primera semana","practicante","recien ingreso","recien entro","me acaban de contratar","no se a quien preguntar","no se a quien acudir","necesito ayuda","estoy perdido","estoy perdida","que hago ahora","bienvenida","bienvenido","onboarding","induccion"],
+ body:()=>`<p><b>Bienvenido/a al área de Control de Calidad.</b> Este asistente centraliza lo que antes solo sabían los analistas con más tiempo, para que no dependas de preguntarle a alguien cada vez.</p>
+ <h4>Cómo usarme</h4>
+ <ul class="arrow">
+  <li>Escribe tu duda con tus propias palabras, no hace falta el término técnico exacto: <i>"se me cayó algo y no sé qué hacer"</i> funciona igual que <i>"cómo reinicio el CICSFOR"</i>.</li>
+  <li>O usa el menú lateral (01 a 11) para explorar por tema sin tener que preguntar nada.</li>
+ </ul>
+ <h4>Los temas que cubro</h4>
+ <table><thead><tr><th>Módulo</th><th>Para qué sirve</th></tr></thead><tbody>
+  <tr><td class="m">01</td><td>Enlaces y accesos a los sistemas</td></tr>
+  <tr><td class="m">02</td><td>Cómo se hace el inicio de día</td></tr>
+  <tr><td class="m">03</td><td>Qué canales se prueban y cómo</td></tr>
+  <tr><td class="m">04</td><td>Documentación de ClearQuest (plantillas, entregables)</td></tr>
+  <tr><td class="m">05</td><td>Procedimientos generales (Compare/Merge, CLKY, Sentinel)</td></tr>
+  <tr><td class="m">06</td><td>Qué hacer ante una caída (reinicios de CICS y servicios)</td></tr>
+  <tr><td class="m">07</td><td>HOST / mainframe: JCL, ROSCOE, spool</td></tr>
+  <tr><td class="m">08</td><td>OPEN: tarjetas, cuentas, banca móvil</td></tr>
+  <tr><td class="m">09</td><td>Emulación y transacciones (CICS)</td></tr>
+  <tr><td class="m">10</td><td>Comandos y transacciones de SaraWeb</td></tr>
+  <tr><td class="m">11</td><td>Este mismo: preguntas frecuentes y alcance</td></tr>
+ </tbody></table>
+ <h4>Si pregunto algo y no está documentado</h4>
+ <p>Te lo voy a decir directamente, en vez de inventar una respuesta. En ese caso, consulta con un analista de calidad con más experiencia — y si quieres, pídele que lo agregue en <b>modo Administrador</b> para que quede aquí la próxima vez.</p>
+ <div class="note">No ejecuto comandos, no modifico nada y no tomo decisiones de certificación — solo explico y muestro lo documentado.</div>`,
+ fu:["¿Qué canales se verifican después del inicio de día?","Se me cayó el CICSFOR, ¿qué hago?","¿Cuál es el alcance del asistente?"]
+},
+{
+ id:"11.1", mod:"11", title:"Preguntas frecuentes",
  src:"Repositorio QA consolidado",
  kw:["faq","preguntas frecuentes","dudas","ayuda general","preguntas"],
  body:()=>`<h4>¿Por dónde empiezo el día?</h4>
@@ -1149,7 +1178,7 @@ function score(entry,q,toks){
   const dampen = Math.min(1, 25/(kw.length||1));
   for(const k of kw){
     const nk = norm(k);
-    if(!nk || nk.length<=3) continue;
+    if(!nk || nk.length<=2) continue;
     const isPhrase = nk.includes(" ");
     // Coincidencia por PALABRA COMPLETA, no por substring: si no, una
     // keyword corta como "cuenta" hace match dentro de "cuentame" y trae
@@ -1160,7 +1189,7 @@ function score(entry,q,toks){
       toks.forEach(t=>{ if(nk.includes(t)||t.includes(nk)) matched.add(t); });
     }
   }
-  for(const t of toks) if(t.length>=4 && nt.includes(t)){ s += 8; matched.add(t); }
+  for(const t of toks) if(t.length>=3 && nt.includes(t)){ s += 8; matched.add(t); }
   // Igual que en el servidor: premia cubrir varias palabras distintas de la
   // pregunta, no solo una en común, para no confundir fichas por 1 palabra suelta.
   if(toks.length >= 2) s += 6 * Math.max(0, matched.size - 1);
@@ -1521,7 +1550,7 @@ function ask(text){
     // IA solo agrega riesgo de que "parafrasee" y invente un comando o
     // sintaxis distinta a la real (pasó con Compare/Merge: la IA escribió
     // "compare <jcl1> <jcl2>" cuando el comando real es "compa"/"cermerge").
-    const EXACT_ENTRY_IDS = new Set(['01','04.1','05.1']);
+    const EXACT_ENTRY_IDS = new Set(['01','04.1','05.1','11.0']);
     if(r.entry.mod === '01' || EXACT_ENTRY_IDS.has(r.entry.id)){
       renderEntry(r.entry,r.also,r.txn); return;
     }
