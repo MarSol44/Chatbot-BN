@@ -89,13 +89,13 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
 .adminpanel{flex:1;min-height:0;display:flex;flex-direction:column;background:var(--yellow-bg);padding:34px clamp(20px,4vw,64px);overflow-y:auto}
 .adminpanel[hidden]{display:none}
-.adminpanel h3{margin:0 0 22px;font-family:var(--mono);font-size:12px;letter-spacing:.14em;color:var(--yellow-ink);text-transform:uppercase;opacity:.75}
-.admin-row{flex:1;display:flex;gap:24px;flex-wrap:wrap;align-items:stretch;max-width:1100px;margin:0 auto;width:100%}
-.admin-col{flex:1;min-width:300px;display:flex;flex-direction:column;background:var(--yellow-card);border:1px solid var(--yellow-line);border-radius:14px;padding:22px}
+.adminpanel h3{margin:0 auto 22px;max-width:820px;width:100%;font-family:var(--mono);font-size:12px;letter-spacing:.14em;color:var(--yellow-ink);text-transform:uppercase;opacity:.75}
+.admin-row{flex:1;display:flex;flex-direction:column;gap:24px;max-width:820px;margin:0 auto;width:100%}
+.admin-col{display:flex;flex-direction:column;background:var(--yellow-card);border:1px solid var(--yellow-line);border-radius:14px;padding:22px}
 .admin-col .col-title{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--yellow-ink);text-transform:uppercase;opacity:.65;margin-bottom:14px}
-.dropzone{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border:2px dashed var(--yellow-dash);border-radius:10px;padding:20px;text-align:center;font-family:var(--sans);font-size:14px;color:var(--yellow-ink);cursor:pointer;background:rgba(0,0,0,.05);min-height:180px}
+.dropzone{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;border:2px dashed var(--yellow-dash);border-radius:10px;padding:20px;text-align:center;font-family:var(--sans);font-size:14px;color:var(--yellow-ink);cursor:pointer;background:rgba(0,0,0,.05);min-height:260px}
 .dropzone:hover,.dropzone.over{border-color:var(--yellow-ink);background:rgba(0,0,0,.09)}
-.dropzone .big{font-size:30px;line-height:1}
+.dropzone .big{font-size:44px;line-height:1}
 .dropzone input{display:none}
 .admin-note{justify-content:flex-start}
 .admin-note textarea{flex:1;width:100%;min-height:180px;padding:12px 14px;background:#FFFDF3;border:1px solid var(--yellow-line);border-radius:8px;color:#2B2205;font-family:var(--sans);font-size:14px;resize:vertical}
@@ -656,14 +656,9 @@ const KB = [
  id:"04.1", mod:"04", title:"ClearQuest — etapas y entregables", primary:true,
  src:"04_PlantillasCQ/",
  kw:["clearquest","clear quest","cq","documentacion","etapas","revision","diseño","despliegue","ejecucion","plantillas","entregables","mantenimiento","irpf","rc","dcp","iar","crg","checklist"],
- body:()=>`<p>El proceso de certificación tiene 4 etapas. Estas son las plantillas registradas en el repositorio:</p>
- <table><thead><tr><th>Etapa</th><th>Documentos disponibles</th></tr></thead><tbody>
-  <tr><td><b>Revisión</b></td><td><code>202X-XXXXX - Checklist.docx</code><br><code>CRG_202X_XXXXX.xlsx</code><br><span class="hint">Ejemplo: 2025-M0770</span></td></tr>
-  <tr><td><b>Diseño</b></td><td><code>DCP_20XX-MXXXX.xlsx</code> — Diseño de Casos de Prueba<br><code>IAR_20XX-MXXXX.docx</code> — Informe de Análisis de Requerimiento<br><span class="hint">Ejemplo: 2026-M0228</span></td></tr>
-  <tr><td><b>Ejecución / Actas</b></td><td><code>Modelo - Revisión Conjunta (RC).docx</code><br><code>Modelo - Informe de Resultados de Pruebas Funcionales (IRPF).docx</code><br><span class="hint">Ejemplos: RC_2026-M0102, IRPF_2024-M0175</span></td></tr>
-  <tr><td><b>Despliegue</b></td><td>Sin plantillas registradas en el repositorio actual</td></tr>
- </tbody></table>
- <div class="note"><b>Proceso general de CQ paso a paso:</b> ${GUARDRAIL}<br><span class="hint">El archivo CQ.docx del repositorio está vacío (0 KB).</span></div>`,
+ body:()=>`<p>Para generar los documentos de certificación (matriz de pruebas, IRPF, RC) usa la herramienta:</p>
+ <p><a href="https://generador-documentos-bn-calidad.vercel.app/" target="_blank" rel="noopener">https://generador-documentos-bn-calidad.vercel.app/</a></p>
+ <p class="hint">Sube los documentos del mantenimiento ahí y genera las plantillas automáticamente.</p>`,
  fu:["¿Qué contiene el checklist de mantenimiento?"]
 },
 {
@@ -1123,29 +1118,53 @@ const KB = [
 /* =========================================================
    MOTOR DE BÚSQUEDA
    ========================================================= */
-const STOP = new Set(["que","como","cual","cuales","donde","cuando","para","por","con","los","las","del","una","uno","unos","unas","este","esta","esto","hacer","hago","hace","tengo","puedo","porfa","favor","quiero","necesito","dime","muestrame","explicame","sobre","the","and"]);
+const STOP = new Set(["que","como","cual","cuales","donde","cuando","para","por","con","los","las","del","una","uno","unos","unas","este","esta","esto","hacer","hago","hace","tengo","puedo","porfa","favor","quiero","necesito","dime","muestrame","explicame","sobre","the","and",
+  // sincronizado con _QUERY_STOPWORDS de server.py: sin esto, una ficha con
+  // "inicio de dia" en sus keywords le gana a la ficha correcta con
+  // cualquier pregunta que mencione "día", así sea sobre otro tema.
+  "de","la","el","en","un","y","o","al","es","su","sus","se","lo","si","no",
+  "mas","estos","estas","ese","esa","ya","le","les","fue","son","ser","hay",
+  "quien","me","mi","tu","te","he","ha","han","desde","hasta","porque",
+  "dia","dias","muy"]);
 
 function tokens(q){
   return norm(q).replace(/[^a-z0-9\s]/g," ").split(/\s+/).filter(w=>w.length>2 && !STOP.has(w));
 }
 
+function wordSet(s){
+  return new Set(s.split(/[^a-z0-9ñ]+/).filter(Boolean));
+}
+
 function score(entry,q,toks){
   let s=0;
   const nq = norm(q);
+  const nqWords = wordSet(nq);
   const nt = norm(entry.title);
   const matched = new Set();
-  for(const k of entry.kw){
+  const kw = entry.kw||[];
+  // Igual que en el servidor: una ficha con cientos de "keywords" (típico de
+  // OCR ruidoso de una captura de pantalla) no debe ganarle a una ficha
+  // chica y precisa solo por volumen — se diluye el aporte de cada match.
+  const dampen = Math.min(1, 25/(kw.length||1));
+  for(const k of kw){
     const nk = norm(k);
-    if(nq.includes(nk)){
-      s += nk.includes(" ") ? 14 : 9;
+    if(!nk || nk.length<=3) continue;
+    const isPhrase = nk.includes(" ");
+    // Coincidencia por PALABRA COMPLETA, no por substring: si no, una
+    // keyword corta como "cuenta" hace match dentro de "cuentame" y trae
+    // fichas que no tienen nada que ver con la pregunta.
+    const hit = isPhrase ? nq.includes(nk) : nqWords.has(nk);
+    if(hit){
+      s += 9 * (isPhrase ? 1 : dampen);
       toks.forEach(t=>{ if(nk.includes(t)||t.includes(nk)) matched.add(t); });
-    }else for(const t of toks) if(nk.includes(t)||t.includes(nk)){ s += 3; matched.add(t); }
+    }
   }
-  for(const t of toks) if(nt.includes(t)){ s += 5; matched.add(t); }
+  for(const t of toks) if(t.length>=4 && nt.includes(t)){ s += 8; matched.add(t); }
   // Igual que en el servidor: premia cubrir varias palabras distintas de la
   // pregunta, no solo una en común, para no confundir fichas por 1 palabra suelta.
   if(toks.length >= 2) s += 6 * Math.max(0, matched.size - 1);
   if(entry.primary) s += 1;
+  if(!entry._admin) s *= 1.25; // fichas curadas a mano > texto crudo de ingesta
   return s;
 }
 
@@ -1460,10 +1479,13 @@ async function askLocalAI(q, opts){
 /* =========================================================
    ENRUTADO DE CONSULTAS
    Con la IA activa, toda consulta escrita pasa por el modelo con
-   TODA la página como contexto. Cuando además hay una ficha
-   documentada, esa ficha se muestra primero: es la fuente
-   verificada, y la IA la complementa en lenguaje natural.
-   Con la IA apagada se comporta como el buscador documental puro.
+   TODA la página como contexto, y solo se muestra su respuesta ya
+   redactada (la ficha cruda no se despliega: a veces trae texto de
+   OCR desordenado de capturas de pantalla que confunde más de lo
+   que ayuda). Excepción: módulo 01 (links/accesos), donde la ficha
+   ya es la respuesta completa y no pasa por el modelo.
+   Con la IA apagada se comporta como el buscador documental puro
+   (ahí sí se muestra la ficha, porque es la única respuesta).
    ========================================================= */
 function ask(text){
   const q=(text||'').trim(); if(!q) return;
@@ -1490,12 +1512,21 @@ function ask(text){
   }
 
   if(r.type==='kb'){
-    renderEntry(r.entry,r.also,r.txn);
-    // Módulo 01 (links/accesos/credenciales): la tabla YA es la respuesta
+    // Módulo 01 (links/accesos/credenciales): la ficha YA es la respuesta
     // completa y verificada. Dejar que la IA "comente" aquí solo agrega
     // riesgo de que mezcle contenido de otro documento — ya pasó una vez
     // (pidieron el link de BDUC y la IA citó un manual no relacionado).
-    if(r.entry.mod === '01') return;
+    // Fichas cortas y exactas (comandos/links literales): pasarlas por la
+    // IA solo agrega riesgo de que "parafrasee" y invente un comando o
+    // sintaxis distinta a la real (pasó con Compare/Merge: la IA escribió
+    // "compare <jcl1> <jcl2>" cuando el comando real es "compa"/"cermerge").
+    const EXACT_ENTRY_IDS = new Set(['01','04.1','05.1']);
+    if(r.entry.mod === '01' || EXACT_ENTRY_IDS.has(r.entry.id)){
+      renderEntry(r.entry,r.also,r.txn); return;
+    }
+    // Para el resto: no mostramos la ficha cruda (a veces trae texto de OCR
+    // desordenado de capturas de pantalla) — solo la respuesta redactada
+    // por la IA, que ya usa esa ficha como fuente.
     askLocalAI(q,{
       hadKB:true,
       lead:`Lectura de la IA local sobre la ficha ${r.entry.id} y el resto del repositorio:`

@@ -466,12 +466,12 @@ te las adjuntan en el mensaje del usuario bajo el encabezado "TRANSACCIONES RELA
                 re.search(r"\b" + re.escape(nk) + r"\b", nq) is not None
             )
             if hit:
-                s += (14 if is_phrase else 9) * (1.0 if is_phrase else dampen)
+                s += 9 * (1.0 if is_phrase else dampen)
                 matched_toks.update(t for t in toks if t in nk or nk in t)
         nt = self._norm(e["title"])
         for t in toks:
             if len(t) >= 4 and t in nt:
-                s += 5
+                s += 8
                 matched_toks.add(t)
         # Una ficha larga (p.ej. sacada de un docx grande) acumula keywords de
         # sobra y puede ganarle a la ficha correcta con una sola palabra suelta
