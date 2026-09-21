@@ -349,9 +349,14 @@ class Knowledge:
                 if e["mod"] != "01" or e.get("source") == "admin"]
 
     def entry_text(self, e: dict) -> str:
-        head = f"### FICHA {e['id']} — {e['title']}"
+        # Formato deliberadamente NO parecido a un encabezado markdown: si se
+        # ve como un "### Título", el modelo lo copia literal en su respuesta
+        # (confirmado en pruebas). Con corchetes lo lee como metadato interno,
+        # no como texto a repetir.
+        head = f"[fuente interna — no la repitas: id={e['id']}, tema={e['title']}"
         if e["src"]:
-            head += f"  (fuente: {e['src']})"
+            head += f", archivo={e['src']}"
+        head += "]"
         return f"{head}\n{e['body']}"
 
     def index_text(self) -> str:
@@ -377,8 +382,9 @@ REGLAS DURAS:
 4. NO CITES números de ficha, de módulo ni nombres de archivo fuente. La interfaz ya le
    muestra al analista la ficha verificada junto a tu respuesta; si los inventas, lo
    confundes. Habla del procedimiento, no de dónde está guardado.
-   NUNCA copies literalmente encabezados como "### FICHA ... — ... (fuente: ...)": esos
-   son marcas internas para ti, no contenido para el analista. Si una parte de la
+   NUNCA copies literalmente las líneas "[fuente interna — no la repitas: ...]" que
+   preceden a cada documento: son marcas internas para ti, no contenido para el
+   analista — ni siquiera parafraseadas o entre paréntesis. Si una parte de la
    documentación se ve como texto ilegible, cortado o sin sentido (típico de una foto o
    una captura de pantalla mal escaneada), NO la repitas ni la parafrasees palabra por
    palabra esperando que tenga sentido: ignórala y usa solo las partes que sí se entienden

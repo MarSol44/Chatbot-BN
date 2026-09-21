@@ -1080,7 +1080,7 @@ const KB = [
 {
  id:"11.0", mod:"11", title:"Soy nuevo — guía de bienvenida", primary:true,
  src:"Chat Bot Plan (Lista de requerimientos).docx",
- kw:["soy nuevo","soy nueva","no se nada","no se nada de esto","por donde empiezo","primer dia","primera semana","practicante","recien ingreso","recien entro","me acaban de contratar","no se a quien preguntar","no se a quien acudir","necesito ayuda","estoy perdido","estoy perdida","que hago ahora","bienvenida","bienvenido","onboarding","induccion"],
+ kw:["soy nuevo","soy nueva","no se nada","no se nada de esto","por donde empiezo","primer dia","primera semana","practicante","recien ingreso","recien entro","me acaban de contratar","no se a quien preguntar","no se a quien acudir","necesito ayuda","estoy perdido","estoy perdida","que hago ahora","bienvenida","bienvenido","onboarding","induccion","como uso este chat","como uso el asistente","como funciona este chat","como se usa esto","que puedo preguntar","tengo miedo de romper algo","miedo de equivocarme","miedo de dañar algo","puedo romper algo","puedo dañar algo","si me equivoco que pasa"],
  body:()=>`<p><b>Bienvenido/a al área de Control de Calidad.</b> Este asistente centraliza lo que antes solo sabían los analistas con más tiempo, para que no dependas de preguntarle a alguien cada vez.</p>
  <h4>Cómo usarme</h4>
  <ul class="arrow">
@@ -1105,6 +1105,22 @@ const KB = [
  <p>Te lo voy a decir directamente, en vez de inventar una respuesta. En ese caso, consulta con un analista de calidad con más experiencia — y si quieres, pídele que lo agregue en <b>modo Administrador</b> para que quede aquí la próxima vez.</p>
  <div class="note">No ejecuto comandos, no modifico nada y no tomo decisiones de certificación — solo explico y muestro lo documentado.</div>`,
  fu:["¿Qué canales se verifican después del inicio de día?","Se me cayó el CICSFOR, ¿qué hago?","¿Cuál es el alcance del asistente?"]
+},
+{
+ id:"11.3", mod:"11", title:"¿Qué es BDUC?",
+ src:"lista de aplicativos.txt",
+ kw:["que es bduc","bduc significa","significado de bduc","base de datos unica de clientes","para que sirve bduc"],
+ body:()=>`<p><b>BDUC</b> significa <b>Base de Datos Única de Clientes</b>. Es el sistema donde vive la información centralizada de los clientes del banco (incluye accesos principales y espejos).</p>
+ <p>Se usa, entre otras cosas, para verificar y activar cuentas de ahorro antes de operaciones como afiliar una tarjeta de débito. Los accesos están en el módulo 01_Links.</p>`,
+ fu:["¿Cómo afilio una tarjeta de débito?","¿Dónde están los accesos a BDUC?"]
+},
+{
+ id:"11.4", mod:"11", title:"¿Qué es SaraWeb?",
+ src:"10_Comandos - Saraweb.xlsx",
+ kw:["que es saraweb","que es sara web","saraweb significa","para que sirve saraweb","sarawebbranchserver"],
+ body:()=>`<p><b>SaraWeb</b> es el aplicativo web que usan los canales/agencias del Banco de la Nación (por eso su dirección interna se llama <code>sarawebbranchserver</code>, "branch" = agencia) para procesar operaciones de clientes: consultas de saldo, retiros, depósitos, afiliaciones de tarjeta, y más.</p>
+ <p>Cada operación tiene un número de <b>transacción</b> de 4 dígitos (hay 387 registradas en el repositorio, módulo 10). Es lo último que se verifica en el inicio de día, después de que termina la parte HOST.</p>`,
+ fu:["¿Qué transacción uso para consultar saldos de ahorros?","¿Cómo verifico SaraWeb en el inicio de día?"]
 },
 {
  id:"11.1", mod:"11", title:"Preguntas frecuentes",
@@ -1550,7 +1566,7 @@ function ask(text){
     // IA solo agrega riesgo de que "parafrasee" y invente un comando o
     // sintaxis distinta a la real (pasó con Compare/Merge: la IA escribió
     // "compare <jcl1> <jcl2>" cuando el comando real es "compa"/"cermerge").
-    const EXACT_ENTRY_IDS = new Set(['01','04.1','05.1','11.0']);
+    const EXACT_ENTRY_IDS = new Set(['01','04.1','05.1','11.0','11.3','11.4']);
     if(r.entry.mod === '01' || EXACT_ENTRY_IDS.has(r.entry.id)){
       renderEntry(r.entry,r.also,r.txn); return;
     }
