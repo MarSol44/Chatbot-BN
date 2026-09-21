@@ -1,0 +1,2 @@
+cemt s file(*)
+logon applid(pcicsfor)
