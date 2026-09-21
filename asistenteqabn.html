@@ -759,7 +759,7 @@ const KB = [
 {
  id:"06.2", mod:"06", title:"Reiniciar el CCICSFOR",
  src:"GUÍA PARA EL INICIO DE DÍA.docx",
- kw:["reiniciar cicsfor","ccicsfor","bajar cics","subir cics","cemt p shut","sd.st","pre cic","jesmsglg","tareas pendientes","execution","reinicio for","se cayo algo","se me cayo algo","no se que hacer","algo no funciona","no funciona nada","esta caido","no responde"],
+ kw:["reiniciar cicsfor","ccicsfor","bajar cics","subir cics","cemt p shut","sd.st","pre cic","que hace pre cic","comando pre cic","para que sirve pre cic","listar cics","jesmsglg","tareas pendientes","execution","reinicio for","se cayo algo","se me cayo algo","no se que hacer","algo no funciona","no funciona nada","esta caido","no responde"],
  body:()=>`<ol>
   <li>Entrar al <b>TSO</b> (por emulación o por Personal) e ingresar credenciales</li>
   <li>Escribir <code>sd.st</code></li>
@@ -1566,7 +1566,12 @@ function ask(text){
     // IA solo agrega riesgo de que "parafrasee" y invente un comando o
     // sintaxis distinta a la real (pasó con Compare/Merge: la IA escribió
     // "compare <jcl1> <jcl2>" cuando el comando real es "compa"/"cermerge").
-    const EXACT_ENTRY_IDS = new Set(['01','04.1','05.1','11.0','11.3','11.4']);
+    // Fichas de definiciones/procedimientos precisos (comandos, regiones,
+    // subsistemas): probado que un modelo de 1.5B las mezcla o inventa al
+    // parafrasear (confundió TOR con AOR, e inventó que "pre *cic*" es un
+    // comando SQL de transacciones). Se muestran tal cual, ya estan bien
+    // escritas a mano.
+    const EXACT_ENTRY_IDS = new Set(['01','04.1','05.1','06.1','06.2','06.3','06.4','07.1','09.1','09.2','11.0','11.3','11.4']);
     if(r.entry.mod === '01' || EXACT_ENTRY_IDS.has(r.entry.id)){
       renderEntry(r.entry,r.also,r.txn); return;
     }
