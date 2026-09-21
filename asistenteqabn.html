@@ -514,7 +514,7 @@ const KB = [
 {
  id:"02.4", mod:"02", title:"SITBINI — inicializar TBF08 (agencias)",
  src:"GUÍA PARA EL INICIO DE DÍA.docx",
- kw:["sitbini","tbf08","initbf08","agencias","tercer jcl"],
+ kw:["sitbini","tbf08","initbf08","agencias","tercer jcl","que sigue despues del sitbini","jcl despues de sitbini","siguiente jcl despues de sitbini","despues del sitbini"],
  body:()=>`<ol>
   <li>Colocar la fecha del inicio en el <b>PARM de los 3 steps</b></li>
   <li>Formato a cambiar: <code>e '/DZ/MZ/AAAZ/'/09/01/2026/'</code></li>
@@ -525,7 +525,8 @@ const KB = [
  <ul class="arrow" style="margin-top:8px">
   <li>Ejecutar nuevamente el job y verificar el display del step</li>
   <li>Si el mensaje persiste: cerrar en el <b>TP</b> el VSAM <code>CSITB.V.D1N.AGENCIAS.TBF08.F08</code> y volver a ejecutar</li>
- </ul></div>`,
+ </ul></div>
+ <p class="hint">Orden del inicio de día: TOLDVINI → MEPCE10 → <b>SITBINI</b> → <b>siguiente: CVMED01</b> → RECAD07 → PDBSPILL.</p>`,
  fu:["¿Qué sigue después del SITBINI?"]
 },
 {
@@ -1194,7 +1195,7 @@ function score(entry,q,toks){
   const dampen = Math.min(1, 25/(kw.length||1));
   for(const k of kw){
     const nk = norm(k);
-    if(!nk || nk.length<=2) continue;
+    if(!nk || nk.length<=2 || STOP.has(nk)) continue;
     const isPhrase = nk.includes(" ");
     // Coincidencia por PALABRA COMPLETA, no por substring: si no, una
     // keyword corta como "cuenta" hace match dentro de "cuentame" y trae
@@ -1571,7 +1572,7 @@ function ask(text){
     // parafrasear (confundió TOR con AOR, e inventó que "pre *cic*" es un
     // comando SQL de transacciones). Se muestran tal cual, ya estan bien
     // escritas a mano.
-    const EXACT_ENTRY_IDS = new Set(['01','04.1','05.1','06.1','06.2','06.3','06.4','07.1','09.1','09.2','11.0','11.3','11.4']);
+    const EXACT_ENTRY_IDS = new Set(['01','02.2','02.3','02.4','02.5','02.6','04.1','05.1','06.1','06.2','06.3','06.4','07.1','09.1','09.2','11.0','11.3','11.4']);
     if(r.entry.mod === '01' || EXACT_ENTRY_IDS.has(r.entry.id)){
       renderEntry(r.entry,r.also,r.txn); return;
     }

@@ -571,20 +571,28 @@ def build_messages(question: str, history: list[dict]) -> list[dict]:
         if role in ("user", "assistant") and content:
             msgs.append({"role": role, "content": content[:2000]})
 
+    # Una repregunta corta ("¿y si eso tampoco funciona?") no trae keywords
+    # propios: buscar solo con ese texto ancla a lo que sea que comparta una
+    # palabra suelta, no al tema de la conversación. Se combina con el último
+    # mensaje del usuario para que la búsqueda seek el hilo real.
+    prev_user = " ".join(h.get("content", "") for h in history[-4:]
+                         if h.get("role") == "user")
+    search_q = (prev_user + " " + question) if prev_user else question
+
     partes = []
     if CTX_MODE == "smart":
-        rel = KB.relevant_entries(question, k=3)
+        rel = KB.relevant_entries(search_q, k=3)
         if rel:
             partes.append("DOCUMENTACIÓN RELEVANTE:\n" +
                           "\n\n".join(KB.entry_text(e) for e in rel))
     else:
-        rel = KB.relevant_entries(question, k=3)
+        rel = KB.relevant_entries(search_q, k=3)
         if rel:
             partes.append("FICHAS MÁS PROBABLES PARA ESTA CONSULTA (ya están arriba "
                           "completas, se listan como pista): " +
                           ", ".join(f"{e['id']} {e['title']}" for e in rel))
 
-    trx = KB.relevant_trx(question)
+    trx = KB.relevant_trx(search_q)
     if trx:
         partes.append("TRANSACCIONES RELACIONADAS:\n" + KB.trx_text(trx))
 
