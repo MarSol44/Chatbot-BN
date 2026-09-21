@@ -310,6 +310,9 @@ const GUARDRAIL = "No dispongo de información documentada en mi versión actual
 
 const norm = s => (s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
 const esc  = s => String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+// Quita el sufijo de paginación interno "(3/14)" que dejan los documentos
+// trozeados al ingerirse: no es una pregunta ni algo que un analista deba ver.
+const cleanTitle = t => String(t||"").replace(/\s*\(\d+\/\d+\)\s*$/,"");
 
 /* ---------- helpers de render ---------- */
 function linksRows(list){
@@ -1288,8 +1291,8 @@ function renderEntry(e,also,txn){
   const html=typeof e.body==='function'?e.body():e.body;
   const warn=html.includes(GUARDRAIL);
   const fu=(txn?[`Ver la transacción ${txn}`]:[]).concat(e.fu||[]);
-  botTurn({lead:e.title+':',html,src:e.src,state:warn?'warn':'ok',mod:e.mod,fu,after:e.after});
-  if(also&&also.length) chipRow(also.map(a=>({label:a.mod+'_'+a.title,e:a})),it=>{userTurn(it.e.title);renderEntry(it.e);});
+  botTurn({lead:cleanTitle(e.title)+':',html,src:e.src,state:warn?'warn':'ok',mod:e.mod,fu,after:e.after});
+  if(also&&also.length) chipRow(also.map(a=>({label:a.mod+'_'+cleanTitle(a.title),e:a})),it=>{userTurn(cleanTitle(it.e.title));renderEntry(it.e);});
   setWhere(e.mod);
 }
 
@@ -1667,7 +1670,7 @@ function openModule(id){
   const main=entries.find(e=>e.primary)||entries[0];
   renderEntry(main);
   const others=entries.filter(e=>e!==main);
-  if(others.length) chipRow(others.map(o=>({label:o.title,e:o})),it=>{userTurn(it.e.title);renderEntry(it.e);});
+  if(others.length) chipRow(others.map(o=>({label:cleanTitle(o.title),e:o})),it=>{userTurn(cleanTitle(it.e.title));renderEntry(it.e);});
   closeSide();
 }
 
