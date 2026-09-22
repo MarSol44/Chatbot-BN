@@ -1812,8 +1812,39 @@ document.getElementById('noteSave').onclick=async()=>{
   }catch(e){ noteStatus.className='admin-status err'; noteStatus.textContent='Error de red: '+e; }
 };
 
+// Las fichas de Admin vienen de texto plano extraído de un documento, casi
+// siempre sin líneas en blanco entre secciones — mostrado tal cual es una
+// pared de texto ilegible. Se detectan líneas cortas en MAYÚSCULAS o que
+// empiezan con palabras tipo "REVISAR:"/"NOTA:" como encabezados, y las
+// líneas cortas restantes se agrupan como lista, para dar estructura visual
+// sin inventar contenido (el texto en sí no se toca, solo cómo se agrupa).
 function textToHtml(t){
-  return t.split(/\n{2,}/).map(p=>`<p>${esc(p).replace(/\n/g,'<br>')}</p>`).join('');
+  const lines = String(t||"").split(/\n/).map(l=>l.trim()).filter(Boolean);
+  if(!lines.length) return '';
+  const HEADER_WORD = /^(NOTA|REVISAR|IMPORTANTE|OJO|ERROR|VERIFICAR|ADVERTENCIA)[:\s]/i;
+  const isHeaderish = l =>
+    l.length <= 60 &&
+    (HEADER_WORD.test(l) || (l === l.toUpperCase() && /[A-ZÁÉÍÓÚÑ]{3,}/.test(l)));
+  let html = '', list = [];
+  const flush = () => {
+    if(list.length){
+      html += `<ul class="arrow">${list.map(l=>`<li>${esc(l)}</li>`).join('')}</ul>`;
+      list = [];
+    }
+  };
+  for(const line of lines){
+    if(isHeaderish(line)){
+      flush();
+      html += `<h4>${esc(line.replace(/:\s*$/,''))}</h4>`;
+    }else if(line.length <= 100){
+      list.push(line);
+    }else{
+      flush();
+      html += `<p>${esc(line)}</p>`;
+    }
+  }
+  flush();
+  return html;
 }
 async function loadAdminKB(){
   try{
