@@ -978,6 +978,27 @@ def is_credential_question(q: str) -> bool:
     return bool(_CRED_RE.search(Knowledge._norm(q)))
 
 
+# Tercera defensa determinista. A "no encuentro el link de Ivanti" el modelo
+# inventó una navegación completa de menús de Ivanti que no existe en esta
+# interfaz ("haz clic en Configuración, luego en..."). Cualquier pregunta por
+# el enlace/link de un servicio se responde igual: está en el módulo 01.
+_LINK_RE = re.compile(
+    r"\b(link|links|enlace|enlaces)\b.{0,25}\b(encuentro|encontrar|esta|"
+    r"está|cual es|cuál es|donde|dónde)\b|"
+    r"\b(donde|dónde)\b.{0,25}\b(link|links|enlace|enlaces)\b", re.I)
+
+LINK_ANSWER = (
+    "Los enlaces de cada servicio están en el módulo 01_Links de esta misma "
+    "interfaz — ábrelo en el menú lateral y busca el nombre del servicio.\n\n"
+    "Si no aparece ahí, es que no está documentado todavía; no te voy a "
+    "inventar una ruta de navegación de esa herramienta."
+)
+
+
+def is_link_question(q: str) -> bool:
+    return bool(_LINK_RE.search(Knowledge._norm(q)))
+
+
 # Segunda defensa determinista. A "¿cómo configuro un router Cisco en Miraflores?"
 # el modelo se inventó seis pasos de configuración de routers y les pegó encima un
 # particionado del inicio de día. La regla dura del asistente es no responder lo que
@@ -1034,6 +1055,8 @@ def api_ai():
     # bloquean si NO hay una ficha real que las respalde (evita que el modelo
     # invente una clave); si el admin subió un documento real con esos datos,
     # se deja pasar como cualquier otra consulta documentada.
+    if is_link_question(question):
+        return canned_stream(LINK_ANSWER, "link")
     anchored = has_documental_anchor(question, history)
     if is_credential_question(question) and not anchored:
         return canned_stream(CRED_ANSWER, "credenciales")
