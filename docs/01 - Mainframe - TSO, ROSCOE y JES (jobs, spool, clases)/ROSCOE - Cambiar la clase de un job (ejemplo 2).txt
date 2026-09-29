@@ -1,0 +1,3 @@
+CON CMD $TJ25728,CLASS=6
+
+en este ejemple se cambia a la clase 6

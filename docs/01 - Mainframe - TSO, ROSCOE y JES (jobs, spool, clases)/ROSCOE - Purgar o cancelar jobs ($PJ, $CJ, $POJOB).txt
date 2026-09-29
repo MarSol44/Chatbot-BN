@@ -1,0 +1,29 @@
+CON CMD $PJ3842
+donde 3842 es la ejecución, y p de prugar, si se desea cancelar
+CON CMD $CJ3842
+
+Para borrar 20 días atrás
+CON CMD $POJOB Q,Q=KJOW5ZX1,DAYS>20
+Para borrar por nombre JOB
+CON CMD $POJOB(TOLDVINI)
+CON CMD $POJOB(PDBSPILL)
+CON CMD $POJOB(IOASRV)
+CON CMD $POJOB(BKUPEXTR)
+
+
+
+ver porcentaje del spool desde tso
+/$dspl
+
+
+/D U,,,3320 -> VE LOS DISCOS PARA PONER EN LINEA
+/V 332C,ONLINE -> PONE EN LINEA UN DISCO (para activar volumenes)
+
+P
+//=
+//
+
+
+Para borrar spool, dos pasos:
+$POJOB Q,Q=0, DAYS>2
+$POJOB(PDBSPIL),Q=0'

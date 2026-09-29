@@ -1,0 +1,5 @@
+Comando para conocer el alias de un usuario ROSCO:
+
+1. Ingresar el comando XROS
+2. En key ingresar el usuario (ejem: POWB) y enter
+3. Nos mostrará el alias y el nombre del usuario.

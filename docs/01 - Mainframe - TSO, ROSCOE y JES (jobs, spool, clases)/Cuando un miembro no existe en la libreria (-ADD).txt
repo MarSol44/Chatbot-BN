@@ -1,0 +1,3 @@
+agregar en la primera línea de la fuente
+-ADD NOMBRE,ARC
+y luego usar exp sin parentesis

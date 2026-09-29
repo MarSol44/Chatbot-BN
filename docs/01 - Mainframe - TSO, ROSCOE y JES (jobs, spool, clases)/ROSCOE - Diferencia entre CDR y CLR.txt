@@ -1,0 +1,6 @@
+Diferencia entre "c d r" y "c l r"
+
+Cuando queremos editar un jcl que está en una librería pública como la cert.prod se usa "c d r"
+
+Cuando queremos editar un jcl que está en mi librería o de otro operador (osea "a l +") se usa "c l r"
+
