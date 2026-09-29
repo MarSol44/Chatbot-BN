@@ -233,7 +233,7 @@ td.m{font-family:var(--mono);font-size:12.5px;white-space:nowrap;color:#8FE9BC}
 
   <aside class="side" id="side">
     <div class="side-head">
-      <div class="logo"><span class="pulse"></span>REPOSITORIO QA</div>
+      <div class="logo" id="logo" style="cursor:pointer" title="¿Qué es este chat?"><span class="pulse"></span>REPOSITORIO QA</div>
       <div class="ver">v0.1 — MVP · QA INTERNAL</div>
     </div>
     <nav class="nav" id="nav"></nav>
@@ -436,7 +436,7 @@ const KB = [
 {
  id:"02.0", mod:"02", title:"Inicio de día — visión general", primary:true,
  src:"GUÍA PARA EL INICIO DE DÍA.docx",
- kw:["inicio de dia","inicio dia","iniciar el dia","arrancar el dia","empezar el dia","checklist inicio","proceso inicio","que hago en la mañana","rutina diaria","apertura"],
+ kw:["inicio de dia","inicio dia","iniciar el dia","arrancar el dia","empezar el dia","checklist inicio","proceso inicio","que hago en la mañana","rutina diaria","apertura","jcl","orden de los jcl","orden de ejecucion","orden de los jobs","secuencia de jcl","en que orden van los jcl","que jcl va primero"],
  body:()=>`<p>El inicio de día tiene <b>dos partes</b>. La parte HOST se ejecuta primero; SaraWeb depende de que los seis JCL hayan terminado con <code>RC-0000</code>.</p>
  <h4>Parte 1 — HOST (ROSCOC)</h4>
  <ol class="chk">
@@ -763,7 +763,7 @@ const KB = [
 {
  id:"06.2", mod:"06", title:"Reiniciar el CCICSFOR",
  src:"GUÍA PARA EL INICIO DE DÍA.docx",
- kw:["reiniciar cicsfor","ccicsfor","bajar cics","subir cics","cemt p shut","sd.st","pre cic","que hace pre cic","comando pre cic","para que sirve pre cic","listar cics","jesmsglg","tareas pendientes","execution","reinicio for","se cayo algo","se me cayo algo","no se que hacer","algo no funciona","no funciona nada","esta caido","no responde"],
+ kw:["reiniciar cicsfor","ccicsfor","cicsfor","bajar cics","subir cics","cemt p shut","sd.st","pre cic","que hace pre cic","comando pre cic","para que sirve pre cic","listar cics","jesmsglg","tareas pendientes","execution","reinicio for","se cayo algo","se me cayo algo","no se que hacer","algo no funciona","no funciona nada","esta caido","no responde"],
  body:()=>`<ol>
   <li>Entrar al <b>TSO</b> (por emulación o por Personal) e ingresar credenciales</li>
   <li>Escribir <code>sd.st</code></li>
@@ -1328,7 +1328,11 @@ function renderEntry(e,also,txn){
   const warn=html.includes(GUARDRAIL);
   const fu=(txn?[`Ver la transacción ${txn}`]:[]).concat(e.fu||[]);
   botTurn({lead:cleanTitle(e.title)+':',html,src:e.src,state:warn?'warn':'ok',mod:e.mod,fu,after:e.after});
-  if(also&&also.length) chipRow(also.map(a=>({label:a.mod+'_'+cleanTitle(a.title),e:a})),it=>{userTurn(cleanTitle(it.e.title));renderEntry(it.e);});
+  // Ojo: aquí NO se usa cleanTitle() en el label a propósito. Un documento
+  // largo se parte en varias fichas ("GUIA_INICIO_DE_DIA (1/24)", "(2/24)"...)
+  // y si se les quita el "(i/n)" quedan 24 botones con el mismo texto, todos
+  // iguales e indistinguibles entre sí.
+  if(also&&also.length) chipRow(also.map(a=>({label:a.mod+'_'+a.title,e:a})),it=>{userTurn(cleanTitle(it.e.title));renderEntry(it.e);});
   setWhere(e.mod);
 }
 
@@ -1493,7 +1497,7 @@ async function askLocalAI(q, opts){
     const res = await fetch('/api/ai',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ question:q, history: AI.history.slice(-6) }),
+      body: JSON.stringify({ question:q, history: AI.history.slice(-6), current_mod: CURRENT_MOD }),
       signal: AI.ctrl.signal
     });
     if(!res.ok || !res.body) throw new Error('HTTP '+res.status);
@@ -1612,7 +1616,12 @@ function ask(text){
     // comando SQL de transacciones). Se muestran tal cual, ya estan bien
     // escritas a mano.
     const EXACT_ENTRY_IDS = new Set(['01','02.2','02.3','02.4','02.5','02.6','04.1','05.1','05.2','06.1','06.2','06.3','06.4','07.1','09.1','09.2','11.0','11.3','11.4','11.5','11.6','11.7','11.8']);
-    if(r.entry.mod === '01' || EXACT_ENTRY_IDS.has(r.entry.id)){
+    // Lo subido por Admin (r.entry._admin) también se muestra tal cual, sin
+    // IA: son manuales reales que a veces traen credenciales o comandos
+    // exactos mezclados en el texto (pasó con "PROCESO PARA ESTABILIZAR
+    // BDUC"), y dejar que la IA los "redacte" agrega el mismo riesgo de
+    // inventar o mezclar contenido que ya se evitó para las fichas curadas.
+    if(r.entry.mod === '01' || r.entry._admin || EXACT_ENTRY_IDS.has(r.entry.id)){
       renderEntry(r.entry,r.also,r.txn); return;
     }
     // Para el resto: no mostramos la ficha cruda (a veces trae texto de OCR
@@ -1705,8 +1714,20 @@ function openModule(id){
   if(!entries.length){renderNone(mod.name);return;}
   const main=entries.find(e=>e.primary)||entries[0];
   renderEntry(main);
-  const others=entries.filter(e=>e!==main);
-  if(others.length) chipRow(others.map(o=>({label:cleanTitle(o.title),e:o})),it=>{userTurn(cleanTitle(it.e.title));renderEntry(it.e);});
+  // Un documento largo subido por Admin puede partirse en 20+ fichas
+  // ("(1/24)", "(2/24)"...): sin agrupar, esta lista se llena de partes del
+  // MISMO documento. Se muestra solo la primera parte de cada documento
+  // distinto, y como mucho 5 — las más relevantes, sin abrumar con opciones.
+  const seen=new Set(), others=[];
+  for(const e of entries){
+    if(e===main) continue;
+    const key=cleanTitle(e.title);
+    if(seen.has(key)) continue;
+    seen.add(key);
+    others.push(e);
+    if(others.length>=5) break;
+  }
+  if(others.length) chipRow(others.map(o=>({label:o.title,e:o})),it=>{userTurn(cleanTitle(it.e.title));renderEntry(it.e);});
   closeSide();
 }
 
@@ -1723,7 +1744,14 @@ const chips=document.getElementById('chips');
   const b=document.createElement('button'); b.className='chip'; b.dataset.mod=id; b.textContent=id;
   b.onclick=()=>openModule(id); chips.appendChild(b);
 });
+// Módulo donde está parado el usuario ahora mismo (última ficha mostrada,
+// o el módulo que abrió desde el menú). Se manda como pista al backend para
+// que una pregunta corta y ambigua ("dame el orden de los jcl") se
+// interprete dentro de ese contexto, sin que el usuario tenga que repetir
+// "...del inicio de día" cada vez.
+let CURRENT_MOD = null;
 function setWhere(id){
+  CURRENT_MOD = id;
   const m=MODULES.find(x=>x.id===id);
   if(m) document.getElementById('where').innerHTML=`<span class="k">${m.id}_</span> ${esc(m.name)}`;
   nav.querySelectorAll('.nav-item').forEach(b=>b.setAttribute('aria-current',b.dataset.mod===id?'true':'false'));
@@ -1735,6 +1763,11 @@ const qEl=document.getElementById('q');
 document.getElementById('send').onclick=()=>{ask(qEl.value);qEl.value='';};
 qEl.addEventListener('keydown',e=>{if(e.key==='Enter'){ask(qEl.value);qEl.value='';}});
 document.getElementById('help').onclick=()=>ask("¿Cuál es el alcance del asistente?");
+// El logo funciona como botón de bienvenida: útil tanto para un analista
+// antiguo que quiere recordar qué cubre el chat como para un practicante
+// nuevo perdido en su primer día. Usa una frase de la propia lista de
+// keywords de la ficha "Soy nuevo" para asegurar que caiga ahí siempre.
+document.getElementById('logo').onclick=()=>ask("Soy nuevo, no sé nada, ¿por dónde empiezo?");
 aiToggle.onclick=()=>{
   toggleAI(!AI.on);
   // apagar la IA no tiene sentido dentro del modo 12: se sale del modo
@@ -1745,8 +1778,29 @@ aiToggle.onclick=()=>{
 const modeChatBtn=document.getElementById('modeChat'), modeAdminBtn=document.getElementById('modeAdmin');
 const adminPanel=document.getElementById('adminPanel');
 const streamEl=document.getElementById('stream'), composerEl=document.querySelector('.composer');
+
+// Contraseña de Admin: se pide una vez por pestaña y se guarda en
+// sessionStorage (no en localStorage: no debe sobrevivir a cerrar el navegador).
+// Solo protege escribir/listar (subir, notas, borrar); el chat y las fichas ya
+// publicadas siguen siendo de lectura libre para toda el área.
+let adminPass = sessionStorage.getItem('qa_admin_pass') || '';
+async function adminFetch(url, opts){
+  opts = opts || {};
+  opts.headers = Object.assign({}, opts.headers||{}, {'X-Admin-Pass': adminPass});
+  const res = await fetch(url, opts);
+  if(res.status===401){
+    adminPass=''; sessionStorage.removeItem('qa_admin_pass');
+  }
+  return res;
+}
 function setMode(m){
   const isAdmin = m==='admin';
+  if(isAdmin && !adminPass){
+    const p = prompt('Contraseña de administrador:');
+    if(p===null || p==='') return; // canceló: no entra a Admin
+    adminPass = p;
+    sessionStorage.setItem('qa_admin_pass', adminPass);
+  }
   modeChatBtn.setAttribute('aria-pressed', isAdmin?'false':'true');
   modeAdminBtn.setAttribute('aria-pressed', isAdmin?'true':'false');
   adminPanel.hidden = !isAdmin;
@@ -1773,9 +1827,12 @@ async function uploadFile(file){
   uploadStatus.className='admin-status'; uploadStatus.textContent=`Subiendo ${file.name}…`;
   const fd=new FormData(); fd.append('file',file);
   try{
-    const res=await fetch('/api/admin/upload',{method:'POST',body:fd});
+    const res=await adminFetch('/api/admin/upload',{method:'POST',body:fd});
     const data=await res.json();
-    if(!res.ok || !data.ok){
+    if(res.status===401){
+      uploadStatus.className='admin-status err';
+      uploadStatus.textContent='Contraseña de administrador incorrecta. Vuelve a entrar a ADMINISTRADOR.';
+    }else if(!res.ok || !data.ok){
       uploadStatus.className='admin-status err';
       uploadStatus.textContent='Error: '+(data.error||(data.warnings||[]).join('; ')||'no se pudo procesar');
     }else{
@@ -1799,10 +1856,11 @@ document.getElementById('noteSave').onclick=async()=>{
   if(!text){ noteStatus.className='admin-status err'; noteStatus.textContent='Escribe algo primero.'; return; }
   noteStatus.className='admin-status'; noteStatus.textContent='Guardando…';
   try{
-    const res=await fetch('/api/admin/note',{method:'POST',headers:{'Content-Type':'application/json'},
+    const res=await adminFetch('/api/admin/note',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({title,text})});
     const data=await res.json();
-    if(!res.ok || !data.ok){ noteStatus.className='admin-status err'; noteStatus.textContent='Error: '+(data.error||'desconocido'); }
+    if(res.status===401){ noteStatus.className='admin-status err'; noteStatus.textContent='Contraseña de administrador incorrecta. Vuelve a entrar a ADMINISTRADOR.'; }
+    else if(!res.ok || !data.ok){ noteStatus.className='admin-status err'; noteStatus.textContent='Error: '+(data.error||'desconocido'); }
     else{
       noteStatus.className='admin-status ok'; noteStatus.textContent=`Guardado (${data.entries_added} ficha[s]).`;
       document.getElementById('noteTitle').value=''; document.getElementById('noteText').value='';
@@ -1862,7 +1920,11 @@ loadAdminKB();
 const adminListEl=document.getElementById('adminList');
 async function refreshAdminList(){
   try{
-    const res=await fetch('/api/admin/list');
+    const res=await adminFetch('/api/admin/list');
+    if(res.status===401){
+      adminListEl.innerHTML='<div class="row err">Contraseña de administrador incorrecta. Vuelve a entrar a ADMINISTRADOR.</div>';
+      return;
+    }
     const data=await res.json();
     adminListEl.innerHTML = data.count
       ? data.entries.map(e=>{
@@ -1878,7 +1940,7 @@ async function refreshAdminList(){
         }).join('')
       : '<div class="row" style="opacity:.6">Todavía no hay fichas agregadas desde Admin.</div>';
     adminListEl.querySelectorAll('.rm').forEach(b=>b.onclick=async()=>{
-      await fetch('/api/admin/entry/'+encodeURIComponent(b.dataset.id),{method:'DELETE'});
+      await adminFetch('/api/admin/entry/'+encodeURIComponent(b.dataset.id),{method:'DELETE'});
       refreshAdminList();
       loadAdminKB();
     });

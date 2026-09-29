@@ -1,0 +1,13 @@
+Canales (donde se hacen las pruebas, asimismo son todos los dias):
+
+•	AppMóvil (Banca Movil/ App)
+•	Multired Virtual - Tarjeta 
+•	Pagalo
+•	Saraweb
+•	ATM (sotano 4 y SSH Secure Shell Client)
+•	BDUC
+•	SACH
+•	SIAT
+•	Aplicaciones de Emulación
+•	Agentes: POS Izipay o Agente Corresponsal
+

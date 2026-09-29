@@ -1,0 +1,2 @@
+Archivo de prueba del QA de pre-lanzamiento.
+Contiene texto de ejemplo para verificar que la subida funciona end to end.

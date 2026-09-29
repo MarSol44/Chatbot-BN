@@ -1,0 +1,5 @@
+[QA] Documentación cargada: 281 fichas, 387 transacciones, 13 módulos (~6059 tokens, modo smart)
+[QA] Abre http://localhost:5000
+[QA] La primera consulta puede tardar mientras el modelo se calienta; la interfaz te lo indica.
+[QA] IA local lista en 2.8s (6059 tokens de doc en caché)
+[QA] IA local lista en 0.2s (6059 tokens de doc en caché)
