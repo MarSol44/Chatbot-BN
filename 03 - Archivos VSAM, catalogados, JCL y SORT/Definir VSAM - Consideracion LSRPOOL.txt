@@ -1,0 +1,3 @@
+Consideración para definir un vsam
+
+el campo LSRPOOLNum debe tener como valor None

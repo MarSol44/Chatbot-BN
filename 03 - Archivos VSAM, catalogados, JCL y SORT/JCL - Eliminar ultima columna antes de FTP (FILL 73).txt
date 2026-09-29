@@ -1,0 +1,3 @@
+comando para eliminar la última columna del JCL
+si no se borra no corre bien el JCL
+FILL 73 100 / /

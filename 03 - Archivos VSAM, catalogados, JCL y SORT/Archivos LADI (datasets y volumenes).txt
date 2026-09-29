@@ -1,0 +1,106 @@
+PGTGI.S.C.SQ.GF10MEN.D005.INI.E5.JUL2018		PGTGI.S.C.SQ.GF10MEN.D040.INI.E5.JUL2018
+                                                VOL=SER=T08733
+PGTGE.S.C.SQ.GF10MEN.D005.INI.E5.JUL2018		PGTGE.S.C.SQ.GF10MEN.D040.INI.E5.JUL2018
+                                                VOL=SER=S97024
+PCVME.S.C.BD090.CV5.D005.INI.E5.JUL2018      	PCVME.S.C.BD090.CV5.D040.INI.E5.JUL2018
+                                                VOL=SER=S97255
+PDPPL.S.C.BD143.DL1.D005.E5.JUL2018				PDPPL.S.C.BD143.DL1.D040.E5.JUL2018
+                                                VOL=SER=S97026
+PDEJA.S.C.BD060.D11.D005.FIN.E5.JUL2018			PDEJA.S.C.BD060.D11.D040.FIN.E5.JUL2018
+												VOL=SER=S97257
+PDEJA.S.C.BD060.D12.D005.FIN.E5.JUL2018       	PDEJA.S.C.BD060.D12.D040.FIN.E5.JUL2018
+                                                VOL=SER=T24156
+PDEJA.S.C.BD060.D13.D005.FIN.E5.JUL2018       	PDEJA.S.C.BD060.D13.D040.FIN.E5.JUL2018
+                                                VOL=SER=T08747
+PSITC.S.C.SQ.MCFILOG.D005.E5.F180331            PSITC.S.C.SQ.MCFILOG.D040.E5.F180331
+                                                VOL=SER=S97028
+PSITC.S.C.SQ.MCFICTA.D005.E5.F180331			PSITC.S.C.SQ.MCFICTA.D040.E5.F180331
+                                                VOL=SER=S97259
+PTPCT.S.C.VS.TPF99.D005.E5.JUL2018           	PTPCT.S.C.VS.TPF99.D040.E5.JUL2018
+                                                VOL=SER=T09263
+PPRAH.S.C.BD033.PHR.D005.FIN.E5.F310718     	PPRAH.S.C.BD033.PHR.D040.FIN.E5.F310718
+                                                VOL=SER=S97261
+PCDPPL.S.DLF21.CTAPLAZO.F201807                 CDPPL.S.DLF21.CTAPLAZO.F201807                    
+
+PPGCU.H.C.VS.CUF01PA.D999.M1.JUL2018			PPGCU.S.C.VS.CUF01PA.D040.E5.JUL2018
+                                                VOL=SER=S89141
+
+//********************************************************************* 
+//ALTER01  EXEC PGM=IDCAMS,COND=(0,NE)                                  
+//SYSPRINT DD  SYSOUT=*                                                 
+  ALTER CSOMP.X.D1D.HISTDATA.CZFCTH2.F01  -                             
+  NEWNAME(CDPAH.X.D1D.HISTDATA.CZFCTH2.F01)                             
+/*                                                                      
+
+//*********************************************************************
+//STEP01   EXEC PGM=IDCAMS,COND=(0,NE)                                 
+//SYSPRINT DD  SYSOUT=*                                                
+  ALTER -                                                              
+        CTINL.V.D1D.MOVTO.TINL.F59 -                                   
+        NEWNAME(CTINL.V.D1D.MOVTO.TINL.F59B)                           
+  ALTER -                                                              
+        CTINL.V.D1D.MOVTO.TINL.F59.DATA -                              
+        NEWNAME(CTINL.V.D1D.MOVTO.TINL.F59B.DATA)                      
+  ALTER -                                                              
+        CTINL.V.D1D.MOVTO.TINL.F59.INDEX -                             
+        NEWNAME(CTINL.V.D1D.MOVTO.TINL.F59B.INDEX)                     
+/*                                                                     
+
+CLADI.WFILE.PHF27.MATCH.NC401
+CLADI.WFILE.PHF27.NOMATCH.S2
+CLADI.WFILE.TPF99.NOMATCH.S2
+
+***********************************************************************************************
+
+PDPAH.H.C.SQ.DPF92.D999.M1.F310718				PDPAH.S.C.SQ.DPF92.D040.E5.JUL2018
+                                                UNIT=VTSSI,VOL=SER=T24158
+PDPAH.H.C.SQ.DPF47.D999.M1.F310718				PDPAH.S.C.SQ.DPF47.D040.E5.JUL2018
+                                                UNIT=VTSSI,VOL=SER=T09415
+PAHME.H.C.SQ.AHF47.D999.M1.F310718				PAHME.S.C.SQ.AHF47.D040.E5.JUL2018
+                                                UNIT=VTSSI,VOL=SER=S97263
+PSICT.H.C.SQ.SIF23.D999.M1.F310718				PSICT.S.C.SQ.SIF23.D040.E5.JUL2018
+                                                UNIT=VTSSI,VOL=SER=T09423
+Tabla C96, BD 41 Mensual al 31/07/218			PMECT.S.C.BD041.C96.D040.FIN.E5.JUL2018
+                                                UNIT=VTSSI,VOL=SER=S97030
+PTPCT.S.C.VS.TPF99.D005.E5.JUL2018           	PTPCT.S.C.VS.TPF99.D040.E5.JUL2018
+                                                UNIT=VTSSI,VOL=SER=T09263
+
+
+												
+4000302398		4000302398
+4000302568      4000302568
+4000303653      4000303653
+4000303866      4000303866
+4000304528      4000304528
+4000304617      4000304617
+8060304387
+8060306258
+8062301555
+8072301758
+8072301979
+0000000027
+0000000817
+0000012300
+0068328527
+0068372682
+0091035073
+6000028574
+6000031494
+6000033802
+6000035023
+6068000279
+6068001399
+CLADI.S.CTAA.F201807
+
+CSOMP.S.C96041.F050918
+CSOMP.S.C96041.PROD.F050918
+
+CLADI.S.CTAS.AHMN.F201807
+CLADI.S.CTAS.AHME.F201807
+CLADI.S.CTAS.COMN.F201807
+CLADI.S.CTAS.COME.F201807
+
+REPO_CTAS_AHMN_201807.TXT
+REPO_CTAS_AHME_201807.TXT
+REPO_CTAS_COMN_201807.TXT
+REPO_CTAS_COME_201807.TXT

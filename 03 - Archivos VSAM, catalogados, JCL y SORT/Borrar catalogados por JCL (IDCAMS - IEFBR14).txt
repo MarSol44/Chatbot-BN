@@ -1,0 +1,3 @@
+deletear delete borrar catalogados por jcl
+1era opción IDECAMS
+2da sin no los borra del volumen se puede usar el IEFBR14, tomar como ejemplo el ATCAEDEP 

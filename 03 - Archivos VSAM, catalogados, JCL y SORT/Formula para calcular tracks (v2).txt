@@ -1,0 +1,4 @@
+VAR1 = LONREG*CANREG             
+VAR2 = BLOQUEO*2                 
+TRK = [INT(VAR1/ VAR2) + 1 ] * 2 
+1 CYL = 15 TRAKS                 

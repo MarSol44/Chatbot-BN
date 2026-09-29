@@ -1,0 +1,14 @@
+para realizar un compress de un particionado - catalogado
+
+> APPLID(BNROSA)     USER(SM4,MERGE)                                            
+> DSN()               SCRL CSR  COLS 00001 00079                   LINE 000001  
+><...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+....
+ =================================== T O P =====================================
+ SEARCH ARGUMENT                             MATCHES  CATALOG NAME        TYPE  
+ CTPCT.S.REPORTE.TD+                               1 CATALOG.MVSICF.CERT   VSAM 
+    DATA SET NAME                                STATUS    TRKS IN-USE %USED EXT
+ cm CTPCT.S.REPORTE.TDA                                     150      3     2   1
+
+Pasos:
+- Listamos el particionado al que quermemos realizarle el compress
+- Al lado izquierdo colocamos "CM", y damos enter. En la columna status vermos que se encuentra en "COMPRESS".

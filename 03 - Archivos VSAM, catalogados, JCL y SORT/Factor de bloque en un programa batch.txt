@@ -1,0 +1,3 @@
+- Se indica dentro del DATA DIVISION.
+- El comando es: BLOCK CONTAINS
+- Tomar como ejemplo el programa SIUC5710

@@ -1,0 +1,18 @@
+Por ejemplo:
+
+DBID   :    91
+NOM.    NOMBRE                 LONGITUD     DESCRIPCION DEL ARCHIVO 
+DB      ARCHIVO                                                     
+--------------------------------------------------------------------
+PF4     BNPFF04                     80      ARCHIVO DE BENEFICIARIOS
+
+En el caso de la PF4 de la BD 091, para calcular el BLOCK SIZE para un extract usar la siguiete fórmula:
+
+32500/80 = 406.25
+
+406*80 = 32480
+
+BLK = 32480
+
+El máximo block size es 32760
+http://ibmmainframes.com/post-8846.html

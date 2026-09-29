@@ -1,0 +1,6 @@
+Var1 = Lonreg*canreg
+Var2 = bloqueo*2
+Trk = [int(Var1/ Var2) + 1 ] * 2
+
+1 CYL = 15 traks
+

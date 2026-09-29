@@ -1,0 +1,5 @@
+walter p10
+Pasos para traer un catalogado de desarrollo:
+1. Ingreso a desarrollo para verificar la longitud y el block size del catalogado (colcar i al costado izquierdo del nombre)
+2. De no existir el catalogado en certificación crearlo con el job creacat (p10)
+3. una vez creado usar el job ftpbien (p34) ingresando los parametros correspondientes

@@ -1,0 +1,6 @@
+    EQ – Igual 
+       NE - Distinto 
+       GE – Mayor o igual
+       GT - Mayor
+       LE – Menor o igual
+       LT - Menor
