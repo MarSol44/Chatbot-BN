@@ -1,0 +1,62 @@
+REPORTES PARA USUARIO PRUEBAS AGENTES CORRESPONSAL
+--------------------------------------------------
+24/06/2026
+23/06/2026
+09/06/2026
+01/06/2026
+
+JCL TMIND410 
+84320
+84329
+84356
+84370
+
+                CARGA EL ARCHIVO DE CONCILIACION ENVIADO POR IZIPAY
+                GENERA TMIN3409 : Resumen de totales del archivo – MC.
+                GENERA TMIN3410 : Operaciones autorizadas en POS.
+                GENERA TMIN3411 : Operaciones rechazadas en POS.
+JCL TMIND412
+84321
+84330
+84357
+84372
+
+                GENERA TMIN3412 : Reporte Pago de Tasas no encontradas en Mc y BN.
+
+JCL TMIND500
+84322  
+84331
+84358
+84374
+                GENERA TMIN3502 : Reporte de volumen / Montos de transacciones diarias.
+                GENERA TMIN3503 : Montos de transacciones diarias aprobadas y anuladas por entidad.
+                GENERA TMIN3504 : Transacciones diarias aprobadas y anuladas confirmadas. 
+JCL TMIND003 
+84323
+84332 
+84360
+84376
+
+                GENERA CATALOGADO PTMIN.S.TVF02.DIARIO
+                DESCARGARLO COMO BNTVF02_AAAZMZDZ.TXT 
+                                               
+PARA SACAR EL SINTETICO Y SUBIRLO AL ORACLE (SOLICITAR AL USUARIO QUE NUMERO DE SINTETICO REQUIERE)
+#160
+                                               
+JCL COGAD01
+84326 
+84336
+84365
+84383
+
+
+    
+                                                               SELECCIONAR LOS STEPS QUE INCOLUCRAN A LAS PRUEBAS REALIZADAS
+
+JCL COGTD14
+
+ 
+                                                               GENERA EL ARCHIVO CCOGL.S.FINANCIA.FAZMZDZ HAY QUE DESCARGARLO COMO BN_CG_CTL_INTERFACE_AAAZMZDZ.txt              
+                                                               Y ENVIARLO A LA ANALISTA DE CALIDAD QUE LO SUBA AL ORACLE INDICANDO EL NUMERO DE SINTETICO QUE REQUIERE 
+
+
