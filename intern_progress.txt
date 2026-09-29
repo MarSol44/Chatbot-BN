@@ -1,0 +1,144 @@
+
+=== intern_jcl ===
+Q: no se que es un jcl, para que sirve
+anchored=True best_score=11.2 guard=None
+relevant: ['07.4 Ejecutar y consultar un JCL (10.0)', '02.0 Inicio de día — visión general (11.2)']
+A: Un JCL (Job Control Language) es un lenguaje de programación utilizado en sistemas operativos para la ejecución de tareas en un conjunto de archivos. En este contexto, un JCL se refiere a un conjunto de instrucciones que se utilizan para ejecutar un proceso o tarea en un sistema operativo.
+
+En el contexto de la emulación y el inicio de día en el sistema Págalo.pe, los JCLs son utilizados para ejecutar un conjunto de tareas específicas que son parte del flujo de trabajo del sistema. Estos JCLs se utilizan para:
+
+1. Actualizar la fecha de TOLD del día en el sistema HOST (ROSCOC).
+2. Actualizar la fecha en MET07A y MEF31.
+3. Inicializar campos de TBF08 (agencias).
+4. Registrar tipo de cambio en CVF01 y CVF03.
+5. Formate
+
+=== intern_tso ===
+Q: que significa tso
+anchored=False best_score=8.0 guard=fuera-de-alcance
+relevant: ['ADM-7370f0f2 COBOL y Mainframe para QA Funcional (1/2) (8.0)']
+A: No dispongo de información documentada en mi versión actual para este tema. Por favor, consulta con un analista senior.
+
+=== intern_roscoe ===
+Q: nunca he usado roscoe, como entro
+anchored=True best_score=30.0 guard=None
+relevant: ['02.1 Acceso a emulación y ROSCOC (30.0)']
+A: Para acceder a la emulación de ROSCOC, siguiendo la guía que mencionas, puedes seguir estos pasos:
+
+1. **Por Emulación:**
+   - Presiona cualquier Certi.
+   - Escribir "roscoc" en la ventana emergente.
+   - Ingresar con tu usuario y contraseña.
+
+2. **Por Personal:**
+   - Escribir "bnrosa" en la ventana emergente.
+   - Ingresar con tu usuario y contraseña.
+
+Una vez dentro, entra al particionado de trabajo:
+- `a d ctpct.s.reporte.carlos`
+
+Este esquema de trabajo te permite acceder a la emulación de ROSCOC como si estuvieras frente a un terminal físico 3270.
+
+Recuerda que debes tener tu usuario y contraseña de acceso a la emulación para poder acceder a esta guía y los pasos menc
+
+=== intern_cics ===
+Q: que es un cics
+anchored=True best_score=10.0 guard=None
+relevant: ['06.4 ABREBASE — abrir bases en todos los CICS (10.0)', '06.3 Reiniciar CICS TP, TP1 y TP2 + levantar TOLD (10.0)', '06.1 Regiones CICS: TOR, AOR y FOR (10.0)']
+A: Un CICS (Central de Integración de Comunicaciones de Sistemas) es un sistema de gestión de bases de datos y de comunicación utilizado en el contexto de la administración de sistemas de información en el mainframe de IBM. Aquí están las principales características y funciones del CICS:
+
+1. Gestión de Bases de Datos: El CICS gestiona y mantiene las bases de datos de los sistemas de negocio.
+
+2. Comunicación: Facilita la comunicación entre los sistemas de negocio y los canales de negocio.
+
+3. Integración: Permite la integración de sistemas de negocio con otros sistemas de información.
+
+4. Lógica de Negocio: Ejecuta la lógica de negocio, como la validación de datos, la transacción de datos, etc.
+
+5. Control de Acceso: Controla el acceso a los datos de las bases de datos.
+
+6. Aplicaciones: Ejecuta las aplicaciones de negocio
+
+=== intern_desa_certi ===
+Q: no entiendo la diferencia entre desarrollo y certificacion
+anchored=True best_score=17.4 guard=None
+relevant: ['ADM-22edfee3 07_Guia_ROSCOE (2/8) (14.4)', 'ADM-402c9741 Guia para hacer Merge + compare (1/3) (14.6)', 'ADM-08cdfb46 AMBIENTES PARA REALIZAR EL MERGE (1/2) (14.6)', 'ADM-759990a6 Modelo_-_Revision_Conjunta__RC_ (15.6)', 'ADM-d12b76bc COBOL y Mainframe para QA Funcional (2/2) (17.4)']
+A: La diferencia entre desarrollo y certificación en el contexto de QA (Validación de Calidad) se puede entender de la siguiente manera:
+
+1. Desarrollo:
+   - Es el proceso de implementación y mejora de un sistema o aplicación.
+   - Se enfoca en la implementación de nuevas funcionalidades, mejoras, y la corrección de errores.
+   - Se centra en la implementación de nuevas características o mejoras en el sistema.
+   - Se relaciona con la "versión" del sistema en el tiempo, como la versión 1.0, 1.1, etc.
+   - Se enfoca en la "versión" del sistema en el tiempo, como la versión 1.0, 1.1, etc.
+
+2. Certificación:
+   - Es el proceso de asegurar que un sistema cumple con las especificaciones y está listo para su implementación.
+   - Se enfoca en la verificación de que
+
+=== intern_primer_dia ===
+Q: es mi primer dia, que hago
+anchored=True best_score=11.2 guard=None
+relevant: ['11.0 Soy nuevo — guía de bienvenida (11.2)']
+A: Bienvenido/a a la área de Control de Calidad. Aquí encontrarás información sobre cómo iniciar el día, cómo se prueban los canales, cómo se documenta la información, cómo se manejan las caídas y cómo se manejan las operaciones en los sistemas. Si tienes alguna pregunta específica sobre algún tema, no dudes en preguntar.
+
+=== intern_modulo01 ===
+Q: alguien me dijo que revise el modulo 01, que es eso
+anchored=False best_score=9.0 guard=fuera-de-alcance
+relevant: ['ADM-7fcb1ff4 AVANCE MVPE GUIA (1/2) (8.1)']
+A: No dispongo de información documentada en mi versión actual para este tema. Por favor, consulta con un analista senior.
+
+=== intern_tor_aor_for ===
+Q: que es esto de tor aor for
+anchored=True best_score=48.8 guard=None
+relevant: ['06.1 Regiones CICS: TOR, AOR y FOR (48.8)']
+A: En el contexto del CICS (Common Information Class System), los términos TOR, AOR, y FOR se refieren a diferentes componentes del sistema:
+
+1. **TOR (Terminal Operation Routine)**:
+   - **Función**: Se trata de una serie de instrucciones que se ejecutan en los terminales de la aplicación. Estas instrucciones son responsables de realizar tareas como la entrada de datos, la validación, la redacción de mensajes, entre otras.
+   - **Propietaria**: Se comunica con los canales (TOR).
+   - **Función**: Se encarga de la comunicación entre el usuario y el sistema, así como de la ejecución de las tareas específicas de la aplicación.
+
+2. **AOR (Application Operation Routine)**:
+   - **Función**: Se refiere a las funciones que se ejecutan en las aplicaciones. Estas funciones son las que implementan la lógica de negocio,
+
+=== intern_saraweb_acceso ===
+Q: no se como acceder a saraweb
+anchored=True best_score=10.0 guard=None
+relevant: ['11.4 ¿Qué es SaraWeb? (10.0)', '02.7 SaraWeb — inicio de día en los 4 servidores (10.0)']
+A: Para acceder a SaraWeb, debes seguir estos pasos:
+
+1. **Ingresar a Ventanilla**: 
+   - Utiliza el número de terminal correspondiente a tu agencia (por ejemplo, 0111).
+
+2. **Clic en Inicio de Día**:
+   - Este paso puede variar dependiendo del sistema operativo y la configuración específica de tu terminal. 
+
+3. **Loguearse**:
+   - Inicia sesión con tu usuario y contraseña.
+
+4. **Seleccionar Fin de Día -> Aceptar -> Regresar**:
+   - Este paso es opcional dependiendo de la configuración del sistema. Si no se encuentra, puedes pasar a la siguiente etapa.
+
+5. **Seleccionar Inicio de Día -> Aceptar -> Aceptar**:
+   - Este paso es crucial. Debes seleccionar "Inicio de Día" y luego "Aceptar" dos veces para iniciar el proceso.
+
+6.
+
+=== intern_ecu_ecp ===
+Q: que diferencia hay entre ecu y ecp
+anchored=True best_score=30.0 guard=None
+relevant: ['04.2 Checklist de mantenimiento — control de entregables (30.0)']
+A: La diferencia entre "Especificaciones de Casos de Uso" (ECU) y "Especificaciones de Casos de Prueba" (ECP) es la siguiente:
+
+ECU (Especificaciones de Casos de Uso):
+- Especifica las acciones que los usuarios deben realizar para lograr una determinada funcionalidad o propósito.
+- Describe las acciones que los usuarios deben realizar para usar la aplicación o sistema.
+- Se centra en la funcionalidad y la interacción del usuario con la aplicación.
+- Se basa en la documentación de la funcionalidad del software.
+- Se utiliza para definir los casos de prueba.
+
+ECP (Especificaciones de Casos de Prueba):
+- Especifica las acciones que los test automatizados deben realizar para verificar la funcionalidad del software.
+- Describe las acciones que los test automatizados deben realizar para asegurar la correcta implementación de las funcionalidades.
+- Se centra

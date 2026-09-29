@@ -1,0 +1,240 @@
+
+=== link_pregunta ===
+Q: no encuentro el link de Ivanti
+anchored=True best_score=11.2 guard=link
+relevant: ['03.2 Aplicativos del área (11.2)']
+A: Los enlaces de cada servicio están en el módulo 01_Links de esta misma interfaz — ábrelo en el menú lateral y busca el nombre del servicio.
+
+Si no aparece ahí, es que no está documentado todavía; no te voy a inventar una ruta de navegación de esa herramienta.
+
+=== acronimo_1 ===
+Q: como reinicio el ccicsfor
+anchored=True best_score=14.8 guard=None
+relevant: ['06.2 Reiniciar el CCICSFOR (11.2)']
+A: Para reiniciar el CICS FOR (CCICSFOR), puedes seguir estos pasos:
+
+1. **Entrar al TSO**:
+   - Por emulación o por Personal, ingresa las credenciales necesarias.
+
+2. **Escribir `sd.st`**:
+   - Este comando es para iniciar el sistema en modo de soporte técnico.
+
+3. **Listar todos los CICS**:
+   - Utiliza el comando `pre *cic` para listar todos los CICS disponibles.
+
+4. **Bajar el CICS**:
+   - Si el CICS está en uso, puedes bajarlo forzadamente utilizando `/c ccicsfor`.
+   - Si el comando no funciona, puedes intentar bajarlo forzando el shutdown con `/c ccicsfor shut i`.
+
+5. **Subir el CICS**:
+   - Una vez que el CICS esté en uso, puedes subirlo utilizando `/s ccics
+
+=== credencial_sin_doc ===
+Q: cual es la clave de WebSphere Apps
+anchored=True best_score=24.0 guard=None
+relevant: ['ADM-5ec26981 WebSphere Apps (24.0)']
+A: La clave para acceder a WebSphere Apps es "Nohe@8765".
+
+=== clky_generico ===
+Q: como cambio mi clave clky
+anchored=True best_score=30.0 guard=None
+relevant: ['05.2 CLKY — usuarios, claves y permisos (30.0)']
+A: Para cambiar tu clave clky, sigue estos pasos:
+
+1. **Acceso a la aplicación**: Inicia sesión en la aplicación de gestión de tarjetas o clave clky que estás utilizando.
+
+2. **Identificación de la clave clky**: Asegúrate de que la clave clky que deseas cambiar corresponda a la tarjeta o cuenta específica a la que pertenece.
+
+3. **Acceso a la configuración de la clave clky**: En la interfaz de usuario, busca la opción para configurar o cambiar la clave clky. Puede ser en la sección de "Configuración de Clave Clky", "Cambio de Clave Clky" o algo similar.
+
+4. **Ingreso de la clave clky actual**: Asegúrate de introducir la clave clky actual que tienes asignada a la tarjeta o cuenta.
+
+5. **Ingreso de la nueva clave clky**: Luego,
+
+=== compare_merge ===
+Q: como hago un compare y merge
+anchored=True best_score=30.0 guard=None
+relevant: ['05.1 Compare y Merge (30.0)']
+A: Para realizar un "Compare" y "Merge" en la librería de certificación de la master, siga estos pasos:
+
+1. **Compare**:
+   - Abra la librería de la master (por ejemplo, `a d cert.prod.master.jcl`).
+   - Ejecute el comando `compa` para realizar el "Compare".
+
+2. **Merge**:
+   - Abra la librería de la master (por ejemplo, `a d cert.prod.master.jcl`).
+   - Ejecute el comando `cermerge` para realizar el "Merge".
+
+3. **Entrar a la propia librería**:
+   - Para acceder a la librería de la master directamente, use el comando `a l +`.
+   - Ejemplo: `a l + cert.prod.master.jcl`
+
+4. **Entrar a la librería de otro usuario**:
+   - Para acceder a la librería de
+
+=== abrebase ===
+Q: como abro las bases en los cics
+anchored=True best_score=27.5 guard=None
+relevant: ['06.4 ABREBASE — abrir bases en todos los CICS (27.5)']
+A: Para abrir las bases en los CICS (Control Integrated Computer System), siga estos pasos:
+
+1. **Abrir la Guía de Inicio de Día**:
+   - Utilice el archivo "GUÍA PARA EL INICIO DE DÍA.docx" que se menciona en la consulta. Este documento proporcionará las instrucciones necesarias para abrir las bases en los CICS.
+
+2. **Ejecutar el JCL ABREBASE**:
+   - Utilice el JCL (Job Control Language) ABREBASE para abrir las bases en todos los CICS. Este JCL se encuentra en la guía mencionada.
+
+3. **Reintentar la Tx 3840**:
+   - Una vez que se haya abierto la base, vuelva a ejecutar la Tx 3840 para asegurarse de que la base se haya abierto correctamente. Si la Tx 3840 devuelve un
+
+=== bienvenida ===
+Q: soy nuevo, por donde empiezo
+anchored=True best_score=37.5 guard=None
+relevant: ['11.0 Soy nuevo — guía de bienvenida (37.5)']
+A: Bienvenido/a al área de Control de Calidad. Este asistente está diseñado para ayudarte a resolver dudas y facilitar la navegación en la plataforma. Aquí te presento los temas principales y cómo puedes utilizar este recurso:
+
+1. **Enlaces y Accesos a Sistemas**: Este tema te guiará por los enlaces y accesos a los sistemas, incluyendo cómo acceder a los sistemas de CICS y otros sistemas de la empresa.
+
+2. **Cómo se hace el inicio de día**: Este tema te proporcionará información sobre cómo iniciar el día en la empresa, incluyendo los pasos necesarios para comenzar.
+
+3. **Qué canales se prueban y cómo**: Este tema te ayudará a entender los canales de pruebas y cómo se realizan.
+
+4. **Documentación de ClearQuest (plantillas, entregables)**: Este tema te guiará a través de la documentación
+
+=== fuera_de_alcance_1 ===
+Q: cual es el pronostico del clima para manana
+anchored=False best_score=0.0 guard=fuera-de-alcance
+relevant: []
+A: No dispongo de información documentada en mi versión actual para este tema. Por favor, consulta con un analista senior.
+
+=== acronimo_2 ===
+Q: como reinicio el ccicsap
+anchored=False best_score=14.8 guard=fuera-de-alcance
+relevant: ['09.1 CCICSAP — subsistema de aplicaciones (11.2)']
+A: No dispongo de información documentada en mi versión actual para este tema. Por favor, consulta con un analista senior.
+
+=== caida_bduc ===
+Q: se cayo bduc que hago
+anchored=False best_score=11.2 guard=fuera-de-alcance
+relevant: ['11.3 ¿Qué es BDUC? (10.0)', '03.1 Canales de prueba (11.2)']
+A: No dispongo de información documentada en mi versión actual para este tema. Por favor, consulta con un analista senior.
+
+=== seguimiento_1b ===
+Q: y si eso tampoco funciona que hago
+anchored=True best_score=17.3 guard=None
+relevant: ['06.2 Reiniciar el CCICSFOR (11.2)', 'ADM-2b161626 dosificacion de los cics (14.8)', 'ADM-d98ec117 Dosi CICS (17.3)']
+A: Entiendo que estás buscando información sobre cómo reiniciar y manejar los CICS (Control Integrated Computer System) en una red de TI. Aquí te proporciono una guía general basada en la documentación que has compartido:
+
+1. **Reiniciar CICS:**
+   - **Bajar CICS:**
+     - `/c ccicsfor` para bajar el CICS.
+     - `/s ccicsfor` para subirlo.
+     - `/98,y` para bajar el CICS forzadamente.
+     - `/98,go` para bajar el CICS y luego activar las tareas pendientes.
+
+   - **Subir CICS:**
+     - `/s ccicsfor` para subir el CICS.
+     - `/98,go` para activar las tareas pendientes.
+
+2. **Manejo de CICS:**
+   - **Bajar PDATACOM:
+
+=== vago_inicio_dia_problema ===
+Q: tengo un problema con el inicio de dia
+anchored=True best_score=11.2 guard=None
+relevant: ['02.8 Errores comunes del inicio de día (10.0)', '02.7 SaraWeb — inicio de día en los 4 servidores (10.0)', '02.0 Inicio de día — visión general (11.2)']
+A: Entiendo que tienes un problema con el inicio de día en tu sistema. Aquí te dejo una serie de pasos para diagnosticar y solucionar el problema:
+
+1. **Revisar los JCLs**:
+   - Verifica que los JCLs están correctamente configurados y ejecutados en cada servidor.
+   - Comprueba que los JCLs están en la ruta correcta y están en ejecución.
+
+2. **Revisar el Host (ROSCOC)**:
+   - Verifica que el proceso TOLDVINI está corriendo correctamente.
+   - Revisa que MEPCE10 y SITBINI están ejecutando correctamente.
+   - Comprueba que CVMED01 está registrando el tipo de cambio correctamente.
+   - Revisa que RECAD07 está formateando las tablas correctamente.
+   - Verifica que PDBSPILL está depurando el log correctamente.
+
+3. **Re
+
+=== vago_canales_prueba ===
+Q: como prueba QA los canales
+anchored=True best_score=28.8 guard=None
+relevant: ['03.1 Canales de prueba (28.8)']
+A: Para probar los canales de pruebas, puedes seguir estos pasos:
+
+1. **BDUC (Base de Datos Única de Clientes)**:
+   - Accede a la base de datos.
+   - Realiza pruebas de validación de datos.
+   - Verifica la integridad de los datos.
+   - Prueba la recuperación de datos en caso de fallo.
+
+2. **Multired Virtual (tarjeta)**:
+   - Simula la interacción con la tarjeta.
+   - Prueba la transacción de pago.
+   - Verifica la seguridad y la confidencialidad.
+
+3. **App (.apk)**:
+   - Simula la interacción con la aplicación móvil.
+   - Prueba la funcionalidad de la aplicación.
+   - Verifica la compatibilidad con diferentes dispositivos.
+
+4. **POS Izipay**:
+   - Simula la interacción con el punto de venta.
+   - Prueba la
+
+=== vago_antes_certificar ===
+Q: que debo hacer antes de certificar
+anchored=False best_score=9.0 guard=fuera-de-alcance
+relevant: []
+A: No dispongo de información documentada en mi versión actual para este tema. Por favor, consulta con un analista senior.
+
+=== vago_que_es_certificacion ===
+Q: tengo dudas sobre el proceso de certificacion
+anchored=True best_score=18.8 guard=None
+relevant: ['11.8 ¿Qué es la certificación? (18.8)']
+A: Entiendo que tienes dudas sobre el proceso de certificación. Aquí te proporciono una explicación más detallada:
+
+1. **Revisión (Checklist, CRG)**: Esta etapa se encarga de revisar la documentación y la implementación del sistema para asegurarse de que todo está correctamente implementado y documentado.
+
+2. **Diseño (DCP, IAR)**: Aquí se asegura que el diseño del sistema cumple con las especificaciones y está bien estructurado. Se revisa la documentación de diseño y se asegura que todo está bien implementado.
+
+3. **Ejecución de las pruebas**: Este es el momento en que se ejecutan las pruebas del sistema. Se asegura que todo funcione correctamente en el entorno de prueba, separado del de producción, para evitar posibles problemas de producción.
+
+4. **Cierre con las actas RC e IRPF**: Finalmente,
+
+=== vago_transacciones_ayuda ===
+Q: necesito ayuda con las transacciones de saraweb
+anchored=True best_score=18.8 guard=None
+relevant: ['11.0 Soy nuevo — guía de bienvenida (18.8)']
+A: Entendido, analista. Para ayudarte con las transacciones de SaraWeb, necesitaré que me indiques qué tipo de transacción específica te gustaría que te explique. Por ejemplo, ¿te gustaría saber cómo iniciar sesión, cómo realizar una consulta, cómo generar una factura, o algo más?
+
+=== vago_reportar_error ===
+Q: encontre un bug, como lo reporto
+anchored=True best_score=11.2 guard=None
+relevant: ['10.4 Registro de incidentes y defectos (11.2)']
+A: Entiendo que estás buscando información sobre cómo reportar un bug en ClearQuest. Aquí te proporciono algunos pasos generales para reportar un bug en ClearQuest:
+
+1. **Identifica el Bug:**
+   - Asegúrate de que el bug esté bien documentado. Si no lo estás, puedes usar la herramienta de registro de incidentes y defectos para hacerlo.
+
+2. **Registro de Incidente:**
+   - En la hoja de registro de incidentes y defectos, crea una nueva fila.
+   - Llena los campos de la siguiente manera:
+     - **Fecha:** La fecha en la que se observó el bug.
+     - **Transacción:** La transacción o proceso en el que se observó el bug.
+     - **Descripción:** Detalla el problema que se observó.
+     - **Resolución:** Si ya se ha resuelto el bug, escribe "Resuelto" aquí
+
+=== vago_no_entro ===
+Q: no puedo entrar al sistema
+anchored=False best_score=9.5 guard=fuera-de-alcance
+relevant: ['ADM-22edfee3 07_Guia_ROSCOE (2/8) (7.6)', 'ADM-095aec7a AFILIACION DE UNA TARJETA DE CREDITO A UNA CTA DÉBITO (1/6) (7.8)', 'ADM-2ddbaf1f MANUAL LEVANTAMIENTO BANCA MOVIL Y MV (1/3) (8.0)', 'ADM-d98ec117 Dosi CICS (9.5)']
+A: No dispongo de información documentada en mi versión actual para este tema. Por favor, consulta con un analista senior.
+
+=== vago_documentos_certi ===
+Q: que documentos tengo que entregar
+anchored=False best_score=6.6 guard=fuera-de-alcance
+relevant: []
+A: No dispongo de información documentada en mi versión actual para este tema. Por favor, consulta con un analista senior.

@@ -70,6 +70,7 @@ import tempfile
 import threading
 import time
 import uuid
+from functools import wraps
 from html import unescape
 from pathlib import Path
 
@@ -120,6 +121,11 @@ KEEP_ALIVE = _env("QA_KEEP_ALIVE", "8h")
 AUTOSTART_OLLAMA = _env("QA_AUTOSTART_OLLAMA", "1") == "1"
 HOST = _env("QA_HOST", "127.0.0.1")
 PORT = int(_env("QA_PORT", "5000"))
+
+# Contraseña para escribir/borrar en el panel Admin (subir, notas, eliminar,
+# listar). El chat normal y las fichas ya publicadas (/api/admin/public) NO
+# la piden: las lee todo el mundo, solo escribir queda protegido.
+ADMIN_PASSWORD = _env("QA_ADMIN_PASSWORD", "carlos")
 
 MAX_HISTORY_MSGS = 6        # 3 turnos de ida y vuelta
 CONNECT_TIMEOUT = 10
@@ -237,6 +243,87 @@ _QUERY_STOPWORDS = {
     "han", "sobre", "desde", "hasta", "porque", "dia", "dias", "muy", "uno",
 }
 
+# Jerga que usan los analistas al preguntar, que no coincide literalmente con
+# la descripción oficial de la transacción en SaraWeb (p.ej. "afiliar tarjeta"
+# para lo que el sistema documenta como "Emisión tarjeta visa"). Se suma al
+# texto buscable de esa transacción sin tocar su descripción original.
+# Para agregar una transacción nueva: TRX_ALIASES["<código>"] = ["frase 1", ...]
+TRX_ALIASES: dict[str, list[str]] = {
+    "4510": ["afiliar tarjeta", "afiliar tarjetas", "afiliacion tarjeta visa"],
+    "1115": ["actualizar datos de tarjeta", "actualizar datos de mi tarjeta",
+             "actualizacion datos tarjeta"],
+}
+
+# Detecta si una ficha trae un PROCEDIMIENTO real (pasos, comandos) o si es
+# solo una definición/lista de referencia ("qué es X", "qué aplicaciones
+# soporta X"). Se usa para la regla 3 del prompt: cuando la pregunta pide un
+# "cómo" y la única ficha que ancla no tiene nada de esto, no hay nada que
+# citar más allá de la definición — un modelo chico igual improvisa pasos
+# plausibles en vez de admitir que no los tiene (repro real: "cómo reinicio
+# el ccicsap" con solo la ficha 09.1 —que describe el subsistema pero no trae
+# ningún paso— ancló y el modelo inventó comandos de shell que no existen en
+# este entorno mainframe/CICS).
+#
+# Tres formas en que este repositorio redacta pasos reales, en texto plano
+# (aplica igual a fichas curadas del HTML ya limpiadas y a notas de Admin):
+#  - un paso numerado ("1. algo") al inicio de línea;
+#  - un ítem con viñeta que empieza con un verbo en imperativo ("- Ejecutar
+#    el JCL...", "- Escribir sd.st"). OJO: el mismo verbo en infinitivo
+#    dentro de una oración descriptiva ("se usa para verificar...") NO
+#    cuenta — de ahí que se exija que sea la primera palabra tras la viñeta,
+#    no una búsqueda del verbo en cualquier parte del texto (esa versión más
+#    floja anclaba "11.3 ¿Qué es BDUC?" como si trajera procedimiento solo
+#    por la frase "sirve para verificar y activar cuentas...", una
+#    definición, no un paso);
+#  - un comando corto estilo TSO/mainframe ("/C ccicsfor", "/98,go") — UNA
+#    sola letra o dígitos+coma tras la barra, no cualquier "/palabra": una
+#    barra seguida de una palabra larga suele ser solo una "o" dentro de una
+#    oración ("acciones/pasos"), no un comando.
+# Además, en las fichas del HTML (no en las de Admin, que no traen HTML) se
+# suma la marca estructural: una lista <ol> de pasos, o una celda de tabla
+# class="m"/un <code> cuyo contenido (con espacio, punto o barra y más de 4
+# caracteres) se ve como un comando real y no solo un código corto de
+# referencia (p.ej. "TOR", "AT01": esos NO cuentan, por eso el filtro de
+# longitud — sin él, "09.1 CCICSAP" calzaba igual por sus <code>AT01</code>
+# sueltos aunque la ficha completa es solo una descripción del subsistema).
+_VERBOS_PASO = (
+    "Ejecutar|Escribir|Ingresar|Entrar|Bajar|Subir|Abrir|Reiniciar|Verificar|"
+    "Revisar|Colocar|Confirmar|Reintentar|Buscar|Digitar|Presionar|Seleccionar|"
+    "Anotar|Esperar|Salir|Volver|Repetir|Desactivar|Activar|Cambiar|Actualizar|"
+    "Registrar|Iniciar|Cerrar|Copiar|Eliminar|Crear")
+_PROCEDURE_TEXT_RE = re.compile(
+    r"(^|\n)\s*\d+[.)]\s|"
+    r"(^|\n)\s*-\s*(" + _VERBOS_PASO + r")\b|"
+    r"/[A-Za-z]\b|/\d+,", re.I | re.M)
+_PROCEDURE_CELL_RE = re.compile(r'<(?:code|td class="m")>([^<]+)</(?:code|td)>')
+
+
+def _looks_procedural(body: str, raw_html: str | None = None) -> bool:
+    if _PROCEDURE_TEXT_RE.search(body):
+        return True
+    if raw_html is None:
+        return False
+    if "<ol" in raw_html:
+        return True
+    for m in _PROCEDURE_CELL_RE.finditer(raw_html):
+        content = m.group(1)
+        if re.search(r"[/.\s]", content) and len(content) > 4:
+            return True
+    return False
+
+
+# Preguntas de intención OPERATIVA: "reinicia/soluciona/arregla X" o "se cayó
+# X, qué hago" — donde una respuesta inventada es un comando o paso técnico
+# concreto que alguien podría copiar y ejecutar (repro real: comandos de
+# shell falsos para "reiniciar" CCICSAP y BDUC). A propósito NO incluye el
+# "cómo"/"qué" sueltos: son demasiado genéricos y atrapaban preguntas de
+# proceso abiertas sin ese riesgo ("cómo prueba QA los canales", con solo la
+# ficha de lista de canales anclada) — ahí lo que el modelo agrega es
+# metodología general de QA, no un comando fabricado, y bloquearla de más
+# convertía una respuesta razonable en un rechazo innecesario.
+_HOWTO_RE = re.compile(
+    r"\b(reinici\w*|solucion\w*|arregl\w*|que hago|qué hago)\b", re.I)
+
 
 class Knowledge:
     """Todo el conocimiento de la página, ya en texto plano."""
@@ -318,6 +405,7 @@ class Knowledge:
                 "kw": re.findall(r'"([^"]+)"', kw.group(1)) if kw else [],
                 "src": src.group(1) if src else "",
                 "source": "html",
+                "has_procedure": _looks_procedural(body, raw),
             })
 
     def _load_admin(self) -> None:
@@ -329,24 +417,53 @@ class Knowledge:
         except (OSError, json.JSONDecodeError):
             return
         for e in data:
+            body = e.get("body", "")
             self.entries.append({
                 "id": e["id"],
                 "mod": e.get("mod", "13"),
                 "title": e.get("title", "(sin título)"),
-                "body": e.get("body", ""),
+                "body": body,
                 "kw": e.get("kw", []),
                 "src": e.get("source_filename", ""),
                 "source": "admin",
+                "has_procedure": _looks_procedural(body),
             })
 
     # -- texto para el prompt ---------------------------------------------
+    # Fichas como "10.1 Mapa de transacciones SaraWeb" son en realidad un
+    # widget interactivo del navegador (una caja de búsqueda que filtra la
+    # tabla en vivo): su "cuerpo" para el modelo es solo un texto de reemplazo
+    # sin información real (ver _clean_js_body). Sin nada que citar, el
+    # modelo inventa — pasó con "se colgó una transacción, cómo la reinicio":
+    # ancló aquí y devolvió un "número de transacción" de 30 dígitos que no
+    # existe. Las transacciones reales se buscan aparte, vía relevant_trx.
+    _NO_CONTENT_MARKER = "tabla completa de transacciones SaraWeb: se consulta aparte"
+
     @property
     def public_entries(self) -> list[dict]:
         """Todo menos el módulo 01 (credenciales) del HTML original.
         Las credenciales subidas por un ADMINISTRADOR sí entran: el equipo
-        de QA decidió que todo el área debe poder consultarlas por chat."""
+        de QA decidió que todo el área debe poder consultarlas por chat.
+
+        También se excluyen las fichas "hueco documentado": su cuerpo
+        EMPIEZA con el mismo texto del GUARDRAIL porque son un aviso de que
+        ese tema en concreto no está cubierto (p.ej. "06.5 Caída de BDUC,
+        Págalo o App"). Si se dejan pasar como cualquier otra ficha, anclan
+        la pregunta y el modelo las recibe como "documentación relevante" —
+        y en vez de repetir el aviso, improvisa una respuesta (pasó con "se
+        cayó bduc, qué hago": el modelo inventó comandos `service bduc
+        restart` de Linux que no existen en este entorno mainframe/CICS,
+        contradiciendo la propia ficha que dice que no hay procedimiento
+        documentado). Sin estas fichas en el contexto, la pregunta se queda
+        sin anclaje real y cae sola en el guardrail — que es exactamente lo
+        que la ficha ya decía. Ojo: solo se excluye cuando el GUARDRAIL es
+        el contenido PRINCIPAL (va primero); fichas como "10.4 Registro de
+        incidentes" solo mencionan el GUARDRAIL como advertencia sobre un
+        sub-tema puntual, después de contenido real que sí hay que conservar."""
         return [e for e in self.entries
-                if e["mod"] != "01" or e.get("source") == "admin"]
+                if (e["mod"] != "01" or e.get("source") == "admin")
+                and self._NO_CONTENT_MARKER not in e["body"]
+                and not e["body"].startswith(GUARDRAIL)]
 
     def entry_text(self, e: dict) -> str:
         # Formato deliberadamente NO parecido a un encabezado markdown: si se
@@ -379,6 +496,17 @@ REGLAS DURAS:
    TOLDVINI con una sola letra distinta es un error grave, peor que no responder.
    Si no puedes copiar un comando con total exactitud, no lo escribas.
 3. No inventas procedimientos, transacciones, rutas, servidores ni credenciales.
+   Que una ficha esté adjunta NO significa que responda la pregunta: algunas fichas
+   solo DEFINEN qué es un sistema o componente (para qué sirve, qué aplicaciones
+   soporta) sin explicar CÓMO reiniciarlo, configurarlo o solucionarlo. Si te
+   preguntan "cómo hago/reinicio/soluciono X" y la ficha adjunta sobre X es solo una
+   definición — no trae pasos, comandos ni un procedimiento — NO te inventes esos
+   pasos a partir de lo que "normalmente" se haría en un sistema parecido. Dices que
+   tienes la definición de X pero no el procedimiento, y respondes con el GUARDRAIL
+   para la parte de "cómo". Lo mismo aplica a una repregunta de seguimiento ("¿y si
+   eso tampoco funciona?"): si la documentación no cubre ese siguiente paso, no
+   inventes una alternativa genérica ("reinicia el servidor", "contacta a soporte") —
+   di que no tienes ese siguiente paso documentado.
 4. NO CITES números de ficha, de módulo ni nombres de archivo fuente. La interfaz ya le
    muestra al analista la ficha verificada junto a tu respuesta; si los inventas, lo
    confundes. Habla del procedimiento, no de dónde está guardado.
@@ -442,13 +570,27 @@ te las adjuntan en el mensaje del usuario bajo el encabezado "TRANSACCIONES RELA
     def _raw_words(nq: str) -> set[str]:
         return {w for w in re.split(r"[^a-z0-9ñ]+", nq) if w}
 
-    def score_entry(self, e: dict, q: str) -> float:
+    def score_entry(self, e: dict, q: str, current_mod: str | None = None) -> float:
+        return self._score_entry_detail(e, q, current_mod)[0]
+
+    def _score_entry_detail(self, e: dict, q: str,
+                            current_mod: str | None = None) -> tuple[float, set[str]]:
+        """Puntaje + qué palabras distintas de la pregunta calzaron. El
+        conteo de palabras se usa aparte para exigir más de una coincidencia
+        genérica en fichas sensibles (ver has_documental_anchor).
+
+        current_mod: módulo donde está parado el usuario en la interfaz (la
+        última ficha que vio, o el módulo que abrió del menú). Una pregunta
+        corta y ambigua ("dame el orden de los jcl") debe interpretarse
+        dentro de ESE módulo antes que en cualquier otro que solo comparta
+        una palabra suelta — el empujón es chico a propósito: no debe
+        ganarle a una ficha de otro módulo que de verdad calza mejor."""
         nq = self._norm(q)
         nq_words = self._raw_words(nq)
         toks = [t for t in re.split(r"[^a-z0-9]+", nq)
                 if len(t) > 2 and t not in _QUERY_STOPWORDS]
         if not toks:
-            return 0.0
+            return 0.0, set()
         kw = e["kw"]
         # Una ficha ruidosa (sacada de OCR de una captura de pantalla) puede
         # traer 200+ "palabras clave" basura. Sin este freno, el solo volumen
@@ -476,7 +618,20 @@ te las adjuntan en el mensaje del usuario bajo el encabezado "TRANSACCIONES RELA
                 matched_toks.update(t for t in toks if t in nk or nk in t)
         nt = self._norm(e["title"])
         for t in toks:
-            if len(t) >= 3 and t in nt:
+            # "not in matched_toks": si la palabra YA sumó por coincidir con
+            # una keyword, no vuelve a sumar por aparecer también en el
+            # título. Sin este freno, una ficha corta cuyo título repite su
+            # única keyword genérica ("sistema") duplica el puntaje de una
+            # sola palabra real compartida y cruza el umbral de "documentado"
+            # con una pregunta que no tiene nada que ver (pasó con "se me
+            # cayó el sistema, qué hago" contra la ficha "Sistema de
+            # Administración de Tarjetas": el modelo terminó inventando pasos
+            # de soporte técnico que no existen en ningún documento).
+            # Palabra completa, no substring: "sistema" no debe calzar dentro
+            # de "subsistema" (pasó con "CCICSAP — subsistema de
+            # aplicaciones" anclando la misma pregunta vaga de arriba).
+            if (len(t) >= 3 and t not in matched_toks and
+                    re.search(r"\b" + re.escape(t) + r"\b", nt)):
                 s += 8
                 matched_toks.add(t)
         # Una ficha larga (p.ej. sacada de un docx grande) acumula keywords de
@@ -487,18 +642,64 @@ te las adjuntan en el mensaje del usuario bajo el encabezado "TRANSACCIONES RELA
         # corrige justo ese caso.
         if len(toks) >= 2:
             s += 6 * max(0, len(matched_toks) - 1)
+        # Empujón por módulo actual: solo si YA hay algo de coincidencia real
+        # (s > 0) — estar parado en un módulo no debe inventar un anclaje de
+        # la nada, solo desempatar a favor de "donde está el usuario" entre
+        # fichas que de por sí comparten palabras con la pregunta.
+        if current_mod and s > 0 and e.get("mod") == current_mod:
+            s += 6
         # Las fichas curadas a mano (módulos 02-11 del propio HTML) son de
         # fiar; las admin son texto crudo de OCR/ingesta automática, más
         # ruidoso. Ante un empate, gana la curada.
         if e.get("source") == "html":
             s *= 1.25
-        return round(s, 1)
+        return round(s, 1), matched_toks
 
-    def relevant_entries(self, q: str, k: int = 3) -> list[dict]:
-        scored = [(e, self.score_entry(e, q)) for e in self.public_entries]
+    @staticmethod
+    def is_risky_entry(e: dict) -> bool:
+        """Fichas de módulo 01 (accesos/credenciales) o subidas por Admin
+        (sin la revisión manual de las curadas en el HTML): pueden traer una
+        URL o usuario real. No deben entrar al contexto de la IA solo por
+        compartir una palabra genérica suelta con la pregunta — ver
+        has_documental_anchor para el incidente real que motivó esto."""
+        return e.get("mod") == "01" or e.get("source") == "admin"
+
+    def relevant_entries(self, q: str, k: int = 3,
+                         current_mod: str | None = None) -> list[dict]:
+        detailed = [(e, *self._score_entry_detail(e, q, current_mod))
+                   for e in self.public_entries]
+        scored = [(e, s) for e, s, m in detailed
+                 if not self.is_risky_entry(e) or len(m) >= 2]
         scored.sort(key=lambda p: -p[1])
         if not scored or scored[0][1] < 6:
             return []
+        # Si la mejor ficha CURADA (módulos 02-11 del propio HTML, revisada a
+        # mano) es realmente COMPETITIVA con la mejor de todas —no solo
+        # "cruza el umbral", sino que no se queda muy atrás—, se arma el
+        # contexto SOLO con curadas: no se mezcla con notas crudas de Admin,
+        # aunque alguna puntúe algo más alto por pura acumulación de
+        # keywords. Repro real: "cómo reinicio el ccicsfor" trajo junto a la
+        # ficha correcta (06.2, 11.2) dos notas de Admin sobre reinicios de
+        # regiones CICS parecidas pero DISTINTAS (ENF, TOR1; la más alta
+        # puntuaba 14.8); el modelo fundió comandos de las tres ("/P ENF",
+        # "borrar tor1 en PCICTOR1") en un procedimiento inventado que no
+        # existe en ningún documento — justo el error que la regla 2 del
+        # prompt ("los comandos se copian letra por letra") existe para
+        # evitar.
+        # El umbral relativo (no solo ANCHOR_MIN) es a propósito: si la
+        # curada apenas roza el mínimo mientras una ficha de Admin le saca
+        # una ventaja grande, la curada probablemente solo comparte una
+        # palabra suelta y NO es la respuesta — descartar las de Admin ahí
+        # sí rompe casos reales. Repro real: "cuál es la clave de WebSphere
+        # Apps" anclaba en la ficha de Admin correcta (24.0, con la clave
+        # real) pero también, de refilón, en la curada de CLKY (11.2, sin
+        # relación real con WebSphere); exigir solo "cruce el umbral" hacía
+        # que se descartara la ficha de Admin — la única que sí tenía la
+        # respuesta — y el modelo improvisó una clave falsa.
+        html_scored = [(e, s) for e, s in scored if e.get("source") == "html"]
+        if (html_scored and html_scored[0][1] >= ANCHOR_MIN and
+                html_scored[0][1] >= scored[0][1] * 0.7):
+            scored = html_scored
         top = scored[0][1]
         # Antes se metían hasta 5 fichas al contexto aunque solo una fuera
         # realmente relevante (p.ej. preguntar por el link de BDUC traía
@@ -514,21 +715,69 @@ te las adjuntan en el mensaje del usuario bajo el encabezado "TRANSACCIONES RELA
         # es la parte del prompt a la que más caso le hace el modelo.
         return list(reversed(picked))
 
-    def relevant_trx(self, q: str, limit: int = 25) -> list[dict]:
+    @staticmethod
+    def _loose_hit(tok: str, blob: str) -> bool:
+        """Compara tolerando plural/singular simple ("tarjetas" vs "tarjeta"):
+        un analista casi nunca escribe la palabra exacta de la descripción
+        oficial de la transacción."""
+        if tok in blob:
+            return True
+        if tok.endswith("s") and tok[:-1] in blob:
+            return True
+        if not tok.endswith("s") and (tok + "s") in blob:
+            return True
+        return False
+
+    def score_trx(self, t: dict, q: str) -> float:
+        return self._score_trx_detail(t, q)[0]
+
+    def _score_trx_detail(self, t: dict, q: str) -> tuple[float, set[str]]:
+        nq = self._norm(q)
+        toks = [tok for tok in re.split(r"[^a-z0-9]+", nq)
+                if len(tok) > 3 and tok not in _QUERY_STOPWORDS]
+        if not toks:
+            return 0.0, set()
+        blob = self._norm(f"{t.get('d','')} {t.get('b','')}")
+        alias_blob = self._norm(" ".join(TRX_ALIASES.get(t.get("t", ""), [])))
+        s, matched = 0.0, set()
+        for tok in toks:
+            if self._loose_hit(tok, blob):
+                s += 6
+                matched.add(tok)
+            # las alias son jerga curada a mano: pesan más que la coincidencia
+            # cruda contra la descripción oficial del sistema.
+            if alias_blob and self._loose_hit(tok, alias_blob):
+                s += 10
+                matched.add(tok)
+        # Palabras como "tarjeta" solas aparecen en 20+ transacciones distintas:
+        # sin este empujón, cualquiera de ellas compite igual de fuerte que la
+        # que de verdad calza con VARIAS palabras de la pregunta a la vez.
+        if len(toks) >= 2:
+            s += 5 * max(0, len(matched) - 1)
+        return round(s, 1), matched
+
+    def relevant_trx(self, q: str, limit: int = 8) -> list[dict]:
         nq = self._norm(q)
         nums = re.findall(r"\b(\d{4})\b", nq)
-        hits = [t for t in self.trx if t.get("t") in nums]
-        if len(hits) < limit:
-            toks = [t for t in re.split(r"[^a-z0-9]+", nq) if len(t) > 3]
-            for t in self.trx:
-                if t in hits:
-                    continue
-                blob = self._norm(f"{t.get('d','')} {t.get('b','')}")
-                if any(tok in blob for tok in toks):
-                    hits.append(t)
-                if len(hits) >= limit:
-                    break
-        return hits[:limit]
+        exact = [t for t in self.trx if t.get("t") in nums]
+        rest = [t for t in self.trx if t not in exact]
+        detailed = [(t, *self._score_trx_detail(t, q)) for t in rest]
+        # Una sola palabra genérica ("sistema") no basta para meter una
+        # transacción al contexto: pasó con "se me cayó el sistema, qué
+        # hago" anclando TXN 9080 solo por eso, y el modelo terminó
+        # inventando una transacción (9081) que no existe. Sin coincidencia
+        # exacta de número, exige al menos DOS palabras distintas en común.
+        scored = [(t, s) for t, s, m in detailed if len(m) >= 2]
+        scored.sort(key=lambda p: -p[1])
+        picked: list[dict] = []
+        if scored and scored[0][1] > 0:
+            top = scored[0][1]
+            # Mismo criterio que relevant_entries: solo entra lo que de verdad
+            # compite con la mejor coincidencia, no todo lo que roza una
+            # palabra suelta.
+            picked = [t for t, s in scored
+                     if s >= max(6, top * 0.6)][:max(0, limit - len(exact))]
+        return (exact + picked)[:limit]
 
     @staticmethod
     def trx_text(rows: list[dict]) -> str:
@@ -561,7 +810,8 @@ KB = Knowledge()
 # --------------------------------------------------------------------------
 # 2. Construcción de mensajes
 # --------------------------------------------------------------------------
-def build_messages(question: str, history: list[dict]) -> list[dict]:
+def build_messages(question: str, history: list[dict],
+                   current_mod: str | None = None) -> list[dict]:
     """El system prompt es SIEMPRE idéntico → Ollama reutiliza su caché."""
     msgs = [{"role": "system", "content": KB.system_prompt}]
 
@@ -579,22 +829,37 @@ def build_messages(question: str, history: list[dict]) -> list[dict]:
                          if h.get("role") == "user")
     search_q = (prev_user + " " + question) if prev_user else question
 
-    partes = []
-    if CTX_MODE == "smart":
-        rel = KB.relevant_entries(search_q, k=3)
-        if rel:
-            partes.append("DOCUMENTACIÓN RELEVANTE:\n" +
-                          "\n\n".join(KB.entry_text(e) for e in rel))
-    else:
-        rel = KB.relevant_entries(search_q, k=3)
-        if rel:
-            partes.append("FICHAS MÁS PROBABLES PARA ESTA CONSULTA (ya están arriba "
-                          "completas, se listan como pista): " +
-                          ", ".join(f"{e['id']} {e['title']}" for e in rel))
-
     trx = KB.relevant_trx(search_q)
+    # Si ya hay una transacción encontrada con alta confianza (número exacto o
+    # alias curado), las fichas de manuales largos (a veces de un procedimiento
+    # DISTINTO que solo comparte palabras sueltas, p.ej. "afiliación" cuando la
+    # pregunta es sobre "actualización") le ganan la atención al modelo y lo
+    # arrastran a un procedimiento equivocado. Con una transacción confiable ya
+    # identificada, esas fichas no se adjuntan: la respuesta debe salir de la
+    # transacción, no de un manual que no la menciona.
+    nums_in_q = set(re.findall(r"\b(\d{4})\b", Knowledge._norm(search_q)))
+    confident_trx = bool(trx) and (
+        trx[0].get("t") in nums_in_q or KB.score_trx(trx[0], search_q) >= 16)
+
+    partes = []
+    if not confident_trx:
+        if CTX_MODE == "smart":
+            rel = KB.relevant_entries(search_q, k=3, current_mod=current_mod)
+            if rel:
+                partes.append("DOCUMENTACIÓN RELEVANTE:\n" +
+                              "\n\n".join(KB.entry_text(e) for e in rel))
+        else:
+            rel = KB.relevant_entries(search_q, k=3, current_mod=current_mod)
+            if rel:
+                partes.append("FICHAS MÁS PROBABLES PARA ESTA CONSULTA (ya están arriba "
+                              "completas, se listan como pista): " +
+                              ", ".join(f"{e['id']} {e['title']}" for e in rel))
+
     if trx:
-        partes.append("TRANSACCIONES RELACIONADAS:\n" + KB.trx_text(trx))
+        etiqueta = ("TRANSACCIÓN IDENTIFICADA (responde con este número y su "
+                    "descripción; no derives pasos de otro procedimiento):"
+                    if confident_trx else "TRANSACCIONES RELACIONADAS:")
+        partes.append(f"{etiqueta}\n" + KB.trx_text(trx))
 
     partes.append(f"PREGUNTA DEL ANALISTA: {question}")
     msgs.append({"role": "user", "content": "\n\n".join(partes)})
@@ -742,7 +1007,10 @@ def boot_thread() -> None:
 # --------------------------------------------------------------------------
 @app.after_request
 def no_store(resp):
-    if request.path.startswith("/api/"):
+    # También la página principal: mientras el HTML sigue cambiando seguido,
+    # un navegador cacheando la versión vieja hace parecer que un fix "no
+    # aplicó" cuando en realidad sí se guardó, solo no se sirvió.
+    if request.path.startswith("/api/") or request.path == "/":
         resp.headers["Cache-Control"] = "no-store"
     return resp
 
@@ -762,15 +1030,20 @@ def health():
 def debug_relevant():
     """TEMPORAL: para depurar qué fichas se están usando como contexto."""
     q = request.args.get("q", "")
-    rel = KB.relevant_entries(q, k=5)
-    anchored = has_documental_anchor(q, [])
+    current_mod = request.args.get("mod") or None
+    rel = KB.relevant_entries(q, k=5, current_mod=current_mod)
+    trx = KB.relevant_trx(q)
+    anchored = has_documental_anchor(q, [], current_mod)
     return jsonify({
         "question": q,
+        "current_mod": current_mod,
         "anchored": anchored,
-        "best_score": max((KB.score_entry(e, q) for e in KB.public_entries), default=0),
+        "best_score": max((KB.score_entry(e, q, current_mod) for e in KB.public_entries), default=0),
         "relevant": [{"id": e["id"], "title": e["title"], "mod": e["mod"],
-                      "score": KB.score_entry(e, q), "kw_count": len(e["kw"])}
+                      "score": KB.score_entry(e, q, current_mod), "kw_count": len(e["kw"])}
                     for e in rel],
+        "trx": [{"t": t.get("t"), "d": t.get("d"), "b": t.get("b"),
+                 "score": KB.score_trx(t, q)} for t in trx],
     })
 
 
@@ -862,6 +1135,18 @@ def _add_entries(title_base: str, mod: str, chunks: list[str],
     return added
 
 
+def require_admin(fn):
+    """Exige el header X-Admin-Pass en las rutas que escriben o listan
+    metadatos del panel Admin. /api/admin/public queda fuera a propósito:
+    esas fichas ya son públicas, las lee el chat para todos."""
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        if request.headers.get("X-Admin-Pass", "") != ADMIN_PASSWORD:
+            return jsonify({"error": "Contraseña de administrador incorrecta"}), 401
+        return fn(*args, **kwargs)
+    return wrapper
+
+
 @app.route("/api/admin/public")
 def admin_public():
     """Fichas admin en el mismo formato que usa el frontend (KB) para poder
@@ -875,6 +1160,7 @@ def admin_public():
 
 
 @app.route("/api/admin/list")
+@require_admin
 def admin_list():
     rows = _read_admin_kb()
     rows_sorted = sorted(rows, key=lambda r: r.get("added_at", ""), reverse=True)
@@ -882,6 +1168,7 @@ def admin_list():
 
 
 @app.route("/api/admin/entry/<entry_id>", methods=["DELETE"])
+@require_admin
 def admin_delete(entry_id):
     rows = _read_admin_kb()
     new_rows = [r for r in rows if r["id"] != entry_id]
@@ -893,6 +1180,7 @@ def admin_delete(entry_id):
 
 
 @app.route("/api/admin/note", methods=["POST"])
+@require_admin
 def admin_note():
     data = request.get_json(force=True, silent=True) or {}
     text = (data.get("text") or "").strip()
@@ -907,6 +1195,7 @@ def admin_note():
 
 
 @app.route("/api/admin/upload", methods=["POST"])
+@require_admin
 def admin_upload():
     if "file" not in request.files:
         return jsonify({"error": "No se recibió ningún archivo"}), 400
@@ -982,10 +1271,16 @@ def is_credential_question(q: str) -> bool:
 # inventó una navegación completa de menús de Ivanti que no existe en esta
 # interfaz ("haz clic en Configuración, luego en..."). Cualquier pregunta por
 # el enlace/link de un servicio se responde igual: está en el módulo 01.
+# Las dos alternativas cubren el link/enlace ANTES o DESPUÉS del gatillo: el
+# caso real que motivó esta regla ("no encuentro el link de Ivanti") tiene el
+# gatillo ("encuentro") ANTES del link, y con una sola dirección de match la
+# regex nunca disparaba — la pregunta seguía llegando al modelo, que volvió a
+# inventar la misma navegación de menús falsa que esto debía evitar.
 _LINK_RE = re.compile(
     r"\b(link|links|enlace|enlaces)\b.{0,25}\b(encuentro|encontrar|esta|"
     r"está|cual es|cuál es|donde|dónde)\b|"
-    r"\b(donde|dónde)\b.{0,25}\b(link|links|enlace|enlaces)\b", re.I)
+    r"\b(encuentro|encontrar|esta|está|cual es|cuál es|donde|dónde)\b"
+    r".{0,25}\b(link|links|enlace|enlaces)\b", re.I)
 
 LINK_ANSWER = (
     "Los enlaces de cada servicio están en el módulo 01_Links de esta misma "
@@ -1009,23 +1304,68 @@ def is_link_question(q: str) -> bool:
 ANCHOR_MIN = 10
 
 
-def has_documental_anchor(question: str, history: list[dict]) -> bool:
-    best = max((KB.score_entry(e, question) for e in KB.public_entries), default=0)
-    if best >= ANCHOR_MIN:
+def _entry_clears_anchor(e: dict, score: float, matched: set[str]) -> bool:
+    if score < ANCHOR_MIN:
+        return False
+    # Las fichas de módulo 01 (accesos/credenciales) o subidas por Admin (sin
+    # la revisión manual de las curadas a mano en el HTML) pueden filtrar un
+    # dato real — URL, usuario — si se anclan por UNA SOLA palabra genérica
+    # en común ("sistema", "acceso"). Pasó: "se me cayó el sistema, qué hago"
+    # ancló con la ficha "Sistema de Administración de Tarjetas" por la sola
+    # palabra "sistema", y el modelo inventó pasos de soporte alrededor de
+    # una URL real que sí estaba en esa ficha. Para estas fichas sensibles,
+    # exige al menos DOS palabras distintas en común, no una sola.
+    return len(matched) >= 2 if KB.is_risky_entry(e) else True
+
+
+def _anchored_by_entries(question: str, scored: list[tuple[dict, float, set]],
+                         current_mod: str | None = None) -> bool:
+    clearing = [e for e, s, m in scored if _entry_clears_anchor(e, s, m)]
+    if not clearing:
+        return False
+    # Si la pregunta pide un "cómo" (reiniciar, solucionar, configurar...),
+    # hay que revisar has_procedure sobre lo que el modelo REALMENTE va a
+    # recibir — es decir, el resultado de KB.relevant_entries(), el mismo
+    # que arma build_messages() — y no sobre "clearing" en crudo. Repro
+    # real: "cómo reinicio el ccicsap" anclaba tanto en la ficha curada
+    # 09.1 (sin procedimiento) como en una nota de Admin sobre ENF/PDATACOM
+    # (con comandos reales, pero de OTRO componente); esa nota bastaba para
+    # que "clearing" tuviera algo con has_procedure=True, aunque
+    # relevant_entries() ya la descarta (regla de "preferir curadas" — ver
+    # ese método) y el modelo solo recibía la ficha descriptiva. Revisando
+    # el resultado ya filtrado, si NINGUNA ficha que de verdad llega al
+    # prompt trae un procedimiento, no hay nada que citar más allá de la
+    # definición: un modelo chico igual improvisa pasos plausibles en vez
+    # de admitir que no los tiene. Si aunque sea una SÍ trae pasos reales,
+    # se deja pasar normalmente.
+    if _HOWTO_RE.search(Knowledge._norm(question)):
+        actually_sent = KB.relevant_entries(question, k=3, current_mod=current_mod)
+        if not any(e.get("has_procedure") for e in actually_sent):
+            return False
+    return True
+
+
+def has_documental_anchor(question: str, history: list[dict],
+                          current_mod: str | None = None) -> bool:
+    scored = [(e, *KB._score_entry_detail(e, question, current_mod))
+             for e in KB.public_entries]
+    if _anchored_by_entries(question, scored, current_mod):
         return True
 
-    # número de transacción exacto (las 387 del mapa SaraWeb)
-    nums = set(re.findall(r"\b(\d{4})\b", question))
-    if nums and any(t.get("t") in nums for t in KB.trx):
+    # transacción de SaraWeb: por número exacto ("¿qué hace la 4510?") o por
+    # descripción/alias ("¿qué trx uso para afiliar tarjetas?") — relevant_trx
+    # ya cubre ambos casos contra las 387 transacciones documentadas.
+    if KB.relevant_trx(question):
         return True
 
     # seguimiento de una conversación ya anclada ("¿y eso por qué?")
     prev = " ".join(h.get("content", "") for h in history[-4:]
                     if h.get("role") == "user")
     if prev:
-        combo = max((KB.score_entry(e, prev + " " + question)
-                     for e in KB.public_entries), default=0)
-        if combo >= ANCHOR_MIN:
+        combo_q = prev + " " + question
+        combo_scored = [(e, *KB._score_entry_detail(e, combo_q, current_mod))
+                        for e in KB.public_entries]
+        if _anchored_by_entries(combo_q, combo_scored, current_mod):
             return True
     return False
 
@@ -1051,19 +1391,27 @@ def api_ai():
     if KB.error:
         return jsonify({"error": KB.error}), 500
 
+    # Módulo donde está parado el usuario en la interfaz (última ficha vista,
+    # o el módulo abierto del menú). Se valida contra los módulos reales: un
+    # valor cualquiera mandado por el cliente no debe poder afectar el
+    # puntaje de nada.
+    current_mod = data.get("current_mod")
+    if current_mod not in {m["id"] for m in KB.modules}:
+        current_mod = None
+
     # Cortocircuitos deterministas. Las preguntas de credenciales solo se
     # bloquean si NO hay una ficha real que las respalde (evita que el modelo
     # invente una clave); si el admin subió un documento real con esos datos,
     # se deja pasar como cualquier otra consulta documentada.
     if is_link_question(question):
         return canned_stream(LINK_ANSWER, "link")
-    anchored = has_documental_anchor(question, history)
+    anchored = has_documental_anchor(question, history, current_mod)
     if is_credential_question(question) and not anchored:
         return canned_stream(CRED_ANSWER, "credenciales")
     if not anchored:
         return canned_stream(GUARDRAIL, "fuera-de-alcance")
 
-    messages = build_messages(question, history)
+    messages = build_messages(question, history, current_mod)
 
     def generate():
         yield sse({"event": "start", "state": ENGINE.state,
